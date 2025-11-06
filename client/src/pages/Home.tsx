@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Scissors, Palette, Waves, Sparkles, Heart, Star, Phone, MapPin } from "lucide-react";
 import { SiLine } from "react-icons/si";
+import teamPhoto from "@assets/HEIF影像_1762424685823.jpeg";
 
 export default function Home() {
   const services = [
@@ -34,38 +35,71 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <section className="relative py-16 md:py-32 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4 max-w-4xl text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-4 md:mb-6">
-            雅曼美髮沙龍
-          </h1>
-          <p className="text-lg md:text-2xl lg:text-3xl mb-5 md:mb-6 text-muted-foreground font-light">
-            如家般溫馨的美髮體驗
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-center justify-center text-sm md:text-base text-muted-foreground mb-6 md:mb-8">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              <span>中和區民德路52號1樓</span>
+      {/* Hero Section with Team Photo */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/10">
+        <div className="container mx-auto px-4 py-12 md:py-20">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center max-w-7xl mx-auto">
+            {/* Left: Welcome Text */}
+            <div className="text-center lg:text-left space-y-6 md:space-y-8">
+              <div className="space-y-4">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight">
+                  雅曼美髮沙龍
+                </h1>
+                <p className="text-xl md:text-2xl lg:text-3xl text-muted-foreground font-light">
+                  如家般溫馨的美髮體驗
+                </p>
+                <div className="pt-2">
+                  <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+                    專業技術 × 溫暖服務<br/>
+                    讓每位顧客都能享受賓至如歸的美髮時光
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-center lg:items-start justify-center lg:justify-start text-sm md:text-base text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  <span>中和區民德路52號1樓</span>
+                </div>
+                <span className="hidden sm:inline">|</span>
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  <a href="tel:02-89513058" className="hover:text-primary">02-89513058</a>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-4">
+                <Link href="/booking">
+                  <Button size="lg" className="text-base md:text-lg px-6 md:px-8 w-full sm:w-auto" data-testid="button-hero-booking">
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    立即預約
+                  </Button>
+                </Link>
+                <a href="https://line.me/R/ti/p/@377bechg" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="text-base md:text-lg px-6 md:px-8 w-full" data-testid="button-hero-line">
+                    <SiLine className="w-5 h-5 mr-2" />
+                    LINE諮詢
+                  </Button>
+                </a>
+              </div>
             </div>
-            <span className="hidden sm:inline">|</span>
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4" />
-              <a href="tel:02-89513058" className="hover:text-primary">02-89513058</a>
+
+            {/* Right: Team Photo */}
+            <div className="relative">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <div className="aspect-[3/4] relative">
+                  <img 
+                    src={teamPhoto} 
+                    alt="雅曼美髮沙龍專業團隊 - 益安與巧宣設計師" 
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Warm gradient overlay at bottom */}
+                  <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent"></div>
+                </div>
+              </div>
+              {/* Decorative element */}
+              <div className="absolute -z-10 top-8 right-8 w-full h-full rounded-3xl bg-primary/10"></div>
             </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Link href="/booking">
-              <Button size="lg" className="text-base md:text-lg px-6 md:px-8 w-full sm:w-auto" data-testid="button-hero-booking">
-                <Sparkles className="w-5 h-5 mr-2" />
-                立即預約
-              </Button>
-            </Link>
-            <a href="https://line.me/R/ti/p/@377bechg" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="text-base md:text-lg px-6 md:px-8 w-full" data-testid="button-hero-line">
-                <SiLine className="w-5 h-5 mr-2" />
-                LINE諮詢
-              </Button>
-            </a>
           </div>
         </div>
       </section>
