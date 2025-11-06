@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, Settings } from "lucide-react";
 import { SiLine } from "react-icons/si";
 
 export default function Navbar() {
@@ -14,6 +14,7 @@ export default function Navbar() {
     { path: "/team", label: "設計師團隊" },
     { path: "/booking", label: "線上預約" },
     { path: "/contact", label: "聯絡我們" },
+    { path: "/admin", label: "後台管理", icon: Settings },
   ];
 
   return (
@@ -32,6 +33,7 @@ export default function Navbar() {
                   className={location === item.path ? "bg-accent" : ""}
                   data-testid={`link-${item.label}`}
                 >
+                  {item.icon && <item.icon className="w-4 h-4 mr-2" />}
                   {item.label}
                 </Button>
               </Link>
@@ -75,6 +77,7 @@ export default function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     data-testid={`link-mobile-${item.label}`}
                   >
+                    {item.icon && <item.icon className="w-4 h-4 mr-2" />}
                     {item.label}
                   </Button>
                 </Link>
