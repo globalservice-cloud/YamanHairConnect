@@ -6,9 +6,13 @@ import {
   type Booking, type InsertBooking,
   type PurchaseRecord, type InsertPurchaseRecord,
   type MarketingCampaign, type InsertMarketingCampaign,
-  type SeoSetting, type InsertSeoSetting
+  type SeoSetting, type InsertSeoSetting,
+  users, customers, services, staff, bookings, purchaseRecords, marketingCampaigns, seoSettings
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -379,4 +383,264 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DbStorage implements IStorage {
+  private db;
+
+  constructor() {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL not configured");
+    }
+    const sql = neon(process.env.DATABASE_URL);
+    this.db = drizzle(sql);
+    this.initializeDefaultData();
+  }
+
+  private async initializeDefaultData() {
+    const existingUser = await this.getUserByUsername("yama3058");
+    if (!existingUser) {
+      await this.createUser({ username: "yama3058", password: "yama3058" });
+    }
+
+    const existingServices = await this.getAllServices();
+    if (existingServices.length === 0) {
+      const defaultServices: InsertService[] = [
+        { name: "洗髮", description: "舒適的洗髮體驗", price: 250, priceNote: null, duration: 30, isActive: true },
+        { name: "專業剪髮", description: "根據臉型設計專屬髮型", price: 400, priceNote: null, duration: 60, isActive: true },
+        { name: "時尚染髮", description: "使用頂級染劑", price: 2000, priceNote: "起", duration: 120, isActive: true },
+        { name: "質感燙髮", description: "自然捲度與蓬鬆感", price: 2000, priceNote: "起", duration: 150, isActive: true },
+        { name: "深層護髮", description: "深層修護受損髮質", price: 800, priceNote: "起", duration: 45, isActive: true },
+      ];
+      for (const service of defaultServices) {
+        await this.createService(service);
+      }
+    }
+
+    const existingStaff = await this.getAllStaff();
+    if (existingStaff.length === 0) {
+      const defaultStaff: InsertStaff[] = [
+        { 
+          name: "益安", 
+          role: "設計師",
+          email: null,
+          phone: null,
+          specialty: "資深設計師（總監）", 
+          yearsOfExperience: 35,
+          photoUrl: "/attached_assets/IMG_3685_1762423148235.jpeg",
+          isActive: true 
+        },
+        { 
+          name: "巧宣", 
+          role: "設計師",
+          email: null,
+          phone: null,
+          specialty: "資深設計師", 
+          yearsOfExperience: 27,
+          photoUrl: "/attached_assets/IMG_3684_1762423120471.jpeg",
+          isActive: true 
+        },
+      ];
+      for (const member of defaultStaff) {
+        await this.createStaff(member);
+      }
+    }
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result[0];
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const result = await this.db.insert(users).values(insertUser).returning();
+    return result[0];
+  }
+
+  async updateUserPassword(id: string, newPassword: string): Promise<User | undefined> {
+    const result = await this.db.update(users).set({ password: newPassword }).where(eq(users.id, id)).returning();
+    return result[0];
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    return this.db.select().from(customers).orderBy(desc(customers.createdAt));
+  }
+
+  async getCustomer(id: string): Promise<Customer | undefined> {
+    const result = await this.db.select().from(customers).where(eq(customers.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getCustomerByPhone(phone: string): Promise<Customer | undefined> {
+    const result = await this.db.select().from(customers).where(eq(customers.phone, phone)).limit(1);
+    return result[0];
+  }
+
+  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
+    const result = await this.db.insert(customers).values(insertCustomer).returning();
+    return result[0];
+  }
+
+  async updateCustomer(id: string, updates: Partial<InsertCustomer>): Promise<Customer | undefined> {
+    const result = await this.db.update(customers).set(updates).where(eq(customers.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteCustomer(id: string): Promise<boolean> {
+    const result = await this.db.delete(customers).where(eq(customers.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getAllServices(): Promise<Service[]> {
+    return this.db.select().from(services).orderBy(desc(services.createdAt));
+  }
+
+  async getActiveServices(): Promise<Service[]> {
+    return this.db.select().from(services).where(eq(services.isActive, true)).orderBy(desc(services.createdAt));
+  }
+
+  async getService(id: string): Promise<Service | undefined> {
+    const result = await this.db.select().from(services).where(eq(services.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createService(insertService: InsertService): Promise<Service> {
+    const result = await this.db.insert(services).values(insertService).returning();
+    return result[0];
+  }
+
+  async updateService(id: string, updates: Partial<InsertService>): Promise<Service | undefined> {
+    const result = await this.db.update(services).set(updates).where(eq(services.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteService(id: string): Promise<boolean> {
+    const result = await this.db.delete(services).where(eq(services.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getAllStaff(): Promise<Staff[]> {
+    return this.db.select().from(staff).orderBy(desc(staff.createdAt));
+  }
+
+  async getActiveStaff(): Promise<Staff[]> {
+    return this.db.select().from(staff).where(eq(staff.isActive, true)).orderBy(desc(staff.createdAt));
+  }
+
+  async getStaffByRole(role: string): Promise<Staff[]> {
+    return this.db.select().from(staff).where(and(eq(staff.role, role), eq(staff.isActive, true))).orderBy(desc(staff.createdAt));
+  }
+
+  async getStaff(id: string): Promise<Staff | undefined> {
+    const result = await this.db.select().from(staff).where(eq(staff.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createStaff(insertStaff: InsertStaff): Promise<Staff> {
+    const result = await this.db.insert(staff).values(insertStaff).returning();
+    return result[0];
+  }
+
+  async updateStaff(id: string, updates: Partial<InsertStaff>): Promise<Staff | undefined> {
+    const result = await this.db.update(staff).set(updates).where(eq(staff.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteStaff(id: string): Promise<boolean> {
+    const result = await this.db.delete(staff).where(eq(staff.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getAllBookings(): Promise<Booking[]> {
+    return this.db.select().from(bookings).orderBy(desc(bookings.createdAt));
+  }
+
+  async getBooking(id: string): Promise<Booking | undefined> {
+    const result = await this.db.select().from(bookings).where(eq(bookings.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getBookingsByDate(date: string): Promise<Booking[]> {
+    return this.db.select().from(bookings).where(eq(bookings.bookingDate, date));
+  }
+
+  async getBookingsByCustomer(customerId: string): Promise<Booking[]> {
+    return this.db.select().from(bookings).where(eq(bookings.customerId, customerId));
+  }
+
+  async createBooking(insertBooking: InsertBooking): Promise<Booking> {
+    const result = await this.db.insert(bookings).values(insertBooking).returning();
+    return result[0];
+  }
+
+  async updateBooking(id: string, updates: Partial<InsertBooking>): Promise<Booking | undefined> {
+    const result = await this.db.update(bookings).set(updates).where(eq(bookings.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteBooking(id: string): Promise<boolean> {
+    const result = await this.db.delete(bookings).where(eq(bookings.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getPurchaseRecordsByCustomer(customerId: string): Promise<PurchaseRecord[]> {
+    return this.db.select().from(purchaseRecords).where(eq(purchaseRecords.customerId, customerId));
+  }
+
+  async createPurchaseRecord(record: InsertPurchaseRecord): Promise<PurchaseRecord> {
+    const result = await this.db.insert(purchaseRecords).values(record).returning();
+    return result[0];
+  }
+
+  async getAllMarketingCampaigns(): Promise<MarketingCampaign[]> {
+    return this.db.select().from(marketingCampaigns).orderBy(desc(marketingCampaigns.createdAt));
+  }
+
+  async getActiveMarketingCampaigns(): Promise<MarketingCampaign[]> {
+    return this.db.select().from(marketingCampaigns).where(eq(marketingCampaigns.isActive, true)).orderBy(desc(marketingCampaigns.createdAt));
+  }
+
+  async getMarketingCampaign(id: string): Promise<MarketingCampaign | undefined> {
+    const result = await this.db.select().from(marketingCampaigns).where(eq(marketingCampaigns.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createMarketingCampaign(insertCampaign: InsertMarketingCampaign): Promise<MarketingCampaign> {
+    const result = await this.db.insert(marketingCampaigns).values(insertCampaign).returning();
+    return result[0];
+  }
+
+  async updateMarketingCampaign(id: string, updates: Partial<InsertMarketingCampaign>): Promise<MarketingCampaign | undefined> {
+    const result = await this.db.update(marketingCampaigns).set(updates).where(eq(marketingCampaigns.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteMarketingCampaign(id: string): Promise<boolean> {
+    const result = await this.db.delete(marketingCampaigns).where(eq(marketingCampaigns.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getAllSeoSettings(): Promise<SeoSetting[]> {
+    return this.db.select().from(seoSettings);
+  }
+
+  async getSeoSettingByPage(page: string): Promise<SeoSetting | undefined> {
+    const result = await this.db.select().from(seoSettings).where(eq(seoSettings.page, page)).limit(1);
+    return result[0];
+  }
+
+  async createOrUpdateSeoSetting(insertSetting: InsertSeoSetting): Promise<SeoSetting> {
+    const existing = await this.getSeoSettingByPage(insertSetting.page);
+    if (existing) {
+      const result = await this.db.update(seoSettings).set({ ...insertSetting, updatedAt: new Date() }).where(eq(seoSettings.id, existing.id)).returning();
+      return result[0];
+    }
+    const result = await this.db.insert(seoSettings).values(insertSetting).returning();
+    return result[0];
+  }
+}
+
+export const storage = new DbStorage();
