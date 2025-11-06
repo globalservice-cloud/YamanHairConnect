@@ -58,18 +58,32 @@ Preferred communication style: Simple, everyday language.
 - Schema definitions in `shared/schema.ts` for type safety across frontend/backend
 - Migration files output to `./migrations` directory
 - Zod schema generation via drizzle-zod for runtime validation
+- Neon HTTP client for database connections
+
+**Database Implementation**: 
+- **Current**: `DbStorage` class using Neon PostgreSQL for all data persistence
+- Automatic initialization of default data on first startup:
+  - Admin user (yama3058/yama3058)
+  - 5 default services (洗髮, 專業剪髮, 時尚染髮, 質感燙髮, 深層護髮)
+  - 2 staff members with professional photos:
+    - 益安 (35 years experience, 總監)
+    - 巧宣 (27 years experience)
+- All data persists across application restarts
+- Staff photos stored in `/attached_assets/` and referenced in database
 
 **Database Schema**:
-- `users` - Admin authentication
+- `users` - Admin authentication (username, password)
 - `customers` - Customer profiles with contact info (phone, LINE ID, email)
-- `services` - Service catalog with pricing and active status
-- `staff` - Team member profiles with roles, specialties, experience
-- `bookings` - Appointments linking customers, services, and staff with status tracking
+- `services` - Service catalog with pricing, duration, and active status
+- `staff` - Team member profiles with roles, specialties, experience, and photo URLs
+- `bookings` - Appointments linking customers, services, and staff with status tracking (pending/approved/rejected/cancelled)
 - `purchase_records` - Transaction history for customer relationship management
 - `marketing_campaigns` - Promotional campaigns with discount configuration
-- `seo_settings` - Page-specific SEO metadata
+- `seo_settings` - Page-specific SEO metadata (title, description, keywords, OG images)
 
-**Storage Abstraction**: `IStorage` interface defining all data operations, allowing for different implementations (in-memory for development, database for production)
+**Storage Abstraction**: `IStorage` interface defining all data operations
+- `DbStorage`: PostgreSQL implementation using Drizzle ORM
+- `MemStorage`: Legacy in-memory implementation (no longer used)
 
 ### Build and Deployment
 
