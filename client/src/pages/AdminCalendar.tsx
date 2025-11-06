@@ -44,8 +44,8 @@ export default function AdminCalendar() {
       if (!response.ok) throw new Error("Failed to update booking");
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+    onSuccess: async (data) => {
+      await queryClient.refetchQueries({ queryKey: ["/api/bookings"] });
       toast({ title: "預約已更新" });
       setIsEditDialogOpen(false);
       setSelectedBooking(null);
@@ -370,8 +370,12 @@ export default function AdminCalendar() {
                   <Button
                     variant="destructive"
                     onClick={() => {
-                      setEditStatus("cancelled");
-                      setTimeout(() => handleUpdateBooking(), 0);
+                      if (selectedBooking) {
+                        updateBookingMutation.mutate({ 
+                          id: selectedBooking.id, 
+                          updates: { status: "cancelled" } 
+                        });
+                      }
                     }}
                     disabled={updateBookingMutation.isPending}
                     className="flex-1 sm:flex-none"
@@ -382,8 +386,12 @@ export default function AdminCalendar() {
                   <Button
                     variant="default"
                     onClick={() => {
-                      setEditStatus("confirmed");
-                      setTimeout(() => handleUpdateBooking(), 0);
+                      if (selectedBooking) {
+                        updateBookingMutation.mutate({ 
+                          id: selectedBooking.id, 
+                          updates: { status: "confirmed" } 
+                        });
+                      }
                     }}
                     disabled={updateBookingMutation.isPending}
                     className="flex-1 sm:flex-none"
