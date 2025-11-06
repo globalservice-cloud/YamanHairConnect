@@ -4,6 +4,38 @@
 
 A full-stack web application for 雅曼美髮沙龍 (Yaman Hair Salon), a family-run hair salon in New Taipei City, Taiwan. The application provides a warm, welcoming online presence with booking management, customer relationship management, and administrative tools. Built with a modern React frontend and Express backend, the system enables customers to browse services, meet the team, and make appointments while giving salon staff comprehensive tools to manage bookings, customers, services, and marketing campaigns.
 
+## Recent Changes (November 6, 2025)
+
+### Staff Photo Upload Feature
+- **Backend**: Added file upload endpoint (POST /api/upload) using Multer middleware
+  - Validates file type (images only: JPEG, PNG, GIF, WebP)
+  - Enforces 5MB file size limit
+  - Saves uploaded photos to `/attached_assets/` with timestamp-based filenames
+  - Returns photo URL for database storage
+
+- **Admin Staff Management**: Enhanced photo management capabilities
+  - Photo upload button with file picker
+  - Real-time photo preview using 128px Avatar component
+  - Upload progress indicator
+  - Remove photo functionality
+  - Photos persist in database via `photoUrl` field
+  - Avatar displays in staff list (both designers and assistants)
+  - Photo preview in edit dialog shows existing photo
+
+- **Public Team Page**: Now reads from database instead of hardcoded data
+  - Fetches active staff from GET /api/staff/active
+  - Filters to show only designers (role === "設計師")
+  - Displays loading state during data fetch
+  - Shows "目前沒有設計師資料" when no designers exist
+  - Automatically updates when new staff added in admin
+
+- **Bug Fixes**: Fixed photo preview state not resetting after save/cancel
+
+### Database Integration
+- Staff photos stored permanently in PostgreSQL
+- All admin changes immediately reflected on public pages via React Query cache invalidation
+- Staff data including photos survives application restarts
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
