@@ -7,7 +7,13 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
-import { Scissors, Palette, Waves, Sparkles, ChevronRight, ChevronLeft, Check, User, Clock, AlertCircle } from "lucide-react";
+import { Scissors, Palette, Waves, Sparkles, ChevronRight, ChevronLeft, Check, User, Clock, AlertCircle, Award } from "lucide-react";
+import stylist1Img from "@assets/stock_images/professional_hairsty_d98dcaa5.jpg";
+import stylist2Img from "@assets/stock_images/professional_hairsty_278c32f0.jpg";
+import stylist3Img from "@assets/stock_images/professional_hairsty_0ae1c4d9.jpg";
+import stylist4Img from "@assets/stock_images/professional_hairsty_ee8ddbc3.jpg";
+import stylist5Img from "@assets/stock_images/professional_hairsty_49afd82e.jpg";
+import stylist6Img from "@assets/stock_images/professional_hairsty_1ed5778f.jpg";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Service, Staff } from "@shared/schema";
@@ -40,13 +46,15 @@ export default function Booking() {
     queryKey: ["/api/staff/role/設計師"],
   });
 
+  const defaultPhotos = [stylist1Img, stylist2Img, stylist3Img, stylist4Img, stylist5Img, stylist6Img];
+  
   const stylists = [
-    { id: "none", name: "無指定", specialty: "", photoUrl: null },
-    ...allStaff.filter(s => s.isActive).map(s => ({
+    { id: "none", name: "無指定", specialty: "由店家安排專業設計師", photoUrl: null },
+    ...allStaff.filter(s => s.isActive).map((s, index) => ({
       id: s.id,
       name: s.name,
       specialty: s.specialty ? `${s.specialty}${s.yearsOfExperience ? `・${s.yearsOfExperience}年經驗` : ''}` : '',
-      photoUrl: s.photoUrl,
+      photoUrl: s.photoUrl || defaultPhotos[index % defaultPhotos.length],
     })),
   ];
 
@@ -274,27 +282,55 @@ export default function Booking() {
                 {staffLoading ? (
                   <div className="text-center py-8 text-muted-foreground">載入中...</div>
                 ) : (
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {stylists.map((stylist) => (
                       <Label
                         key={stylist.id}
                         htmlFor={stylist.id}
-                        className={`flex flex-col items-center p-4 border rounded-xl cursor-pointer hover-elevate ${
-                          selectedStylist === stylist.id ? "border-primary bg-primary/5" : ""
+                        className={`relative flex flex-col items-center p-6 border-2 rounded-2xl cursor-pointer transition-all hover-elevate ${
+                          selectedStylist === stylist.id 
+                            ? "border-primary bg-primary/5 shadow-lg" 
+                            : "border-border"
                         }`}
                       >
-                        <RadioGroupItem value={stylist.id} id={stylist.id} className="mb-2" data-testid={`radio-stylist-${stylist.id}`} />
-                        {stylist.photoUrl ? (
-                          <img src={stylist.photoUrl} alt={stylist.name} className="w-20 h-20 rounded-full object-cover mb-2" />
-                        ) : (
-                          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-2">
-                            <User className="w-8 h-8 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="font-semibold text-center">{stylist.name}</div>
-                        {stylist.specialty && (
-                          <div className="text-xs text-muted-foreground text-center">{stylist.specialty}</div>
-                        )}
+                        <RadioGroupItem 
+                          value={stylist.id} 
+                          id={stylist.id} 
+                          className="absolute top-4 right-4" 
+                          data-testid={`radio-stylist-${stylist.id}`} 
+                        />
+                        
+                        <div className="relative mb-4">
+                          {stylist.photoUrl ? (
+                            <div className="relative">
+                              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80 rounded-2xl" />
+                              <img 
+                                src={stylist.photoUrl} 
+                                alt={stylist.name} 
+                                className="w-32 h-32 rounded-2xl object-cover shadow-md"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shadow-md">
+                              <User className="w-16 h-16 text-primary/60" />
+                            </div>
+                          )}
+                          {selectedStylist === stylist.id && (
+                            <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                              <Check className="w-5 h-5 text-primary-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="text-center space-y-1">
+                          <div className="font-bold text-lg">{stylist.name}</div>
+                          {stylist.specialty && (
+                            <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                              <Award className="w-3 h-3" />
+                              {stylist.specialty}
+                            </div>
+                          )}
+                        </div>
                       </Label>
                     ))}
                   </div>
