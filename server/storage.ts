@@ -14,6 +14,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserPassword(id: string, newPassword: string): Promise<User | undefined>;
   
   getAllCustomers(): Promise<Customer[]>;
   getCustomer(id: string): Promise<Customer | undefined>;
@@ -84,6 +85,13 @@ export class MemStorage implements IStorage {
   }
 
   private initializeDefaultData() {
+    const defaultAdminUser: InsertUser = {
+      username: "yama3058",
+      password: "yama3058"
+    };
+    const adminId = randomUUID();
+    this.users.set(adminId, { ...defaultAdminUser, id: adminId });
+
     const defaultServices: InsertService[] = [
       { name: "洗髮", description: "舒適的洗髮體驗", price: 250, priceNote: null, isActive: true },
       { name: "專業剪髮", description: "根據臉型設計專屬髮型", price: 400, priceNote: null, isActive: true },
@@ -100,7 +108,9 @@ export class MemStorage implements IStorage {
     const defaultStaff: InsertStaff[] = [
       { 
         name: "益安", 
-        role: "設計師", 
+        role: "設計師",
+        email: null,
+        phone: null,
         specialty: "資深設計師（總監）", 
         yearsOfExperience: 35,
         photoUrl: null,
@@ -108,7 +118,9 @@ export class MemStorage implements IStorage {
       },
       { 
         name: "巧宣", 
-        role: "設計師", 
+        role: "設計師",
+        email: null,
+        phone: null,
         specialty: "資深設計師", 
         yearsOfExperience: 27,
         photoUrl: null,
@@ -137,6 +149,14 @@ export class MemStorage implements IStorage {
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUserPassword(id: string, newPassword: string): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    const updated = { ...user, password: newPassword };
+    this.users.set(id, updated);
+    return updated;
   }
 
   async getAllCustomers(): Promise<Customer[]> {

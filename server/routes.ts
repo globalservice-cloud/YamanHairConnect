@@ -265,6 +265,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
 
+  // Auth & User Management
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user || user.password !== password) {
+        return res.status(401).json({ error: "帳號或密碼錯誤" });
+      }
+      
+      res.json({ success: true, user: { id: user.id, username: user.username } });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/auth/change-password", async (req, res) => {
+    try {
+      const { username, oldPassword, newPassword } = req.body;
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user || user.password !== oldPassword) {
+        return res.status(401).json({ error: "當前密碼錯誤" });
+      }
+      
+      const updated = await storage.updateUserPassword(user.id, newPassword);
+      if (!updated) return res.status(404).json({ error: "更新失敗" });
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // SEO Settings
   app.get("/api/seo-settings", async (_req, res) => {
     const settings = await storage.getAllSeoSettings();

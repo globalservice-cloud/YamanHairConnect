@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,20 +14,36 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Login attempt:", { username, password });
-    
-    if (username === "admin" && password === "admin") {
+  const loginMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "登入失敗");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("adminUser", JSON.stringify(data.user));
       toast({ title: "登入成功" });
       setLocation("/admin/dashboard");
-    } else {
+    },
+    onError: (error: Error) => {
       toast({ 
         title: "登入失敗", 
-        description: "帳號或密碼錯誤",
+        description: error.message,
         variant: "destructive" 
       });
-    }
+    },
+  });
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate();
   };
 
   return (
@@ -65,8 +82,13 @@ export default function AdminLogin() {
                 data-testid="input-password"
               />
             </div>
-            <Button type="submit" className="w-full" data-testid="button-login">
-              登入
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loginMutation.isPending}
+              data-testid="button-login"
+            >
+              {loginMutation.isPending ? "登入中..." : "登入"}
             </Button>
           </form>
         </CardContent>

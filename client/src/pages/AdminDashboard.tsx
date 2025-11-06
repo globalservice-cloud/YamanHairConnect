@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Scissors, TrendingUp, Search, LogOut, CalendarDays } from "lucide-react";
+import { Calendar, Users, Scissors, TrendingUp, Search, LogOut, CalendarDays, Lock } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Booking } from "@shared/schema";
 
@@ -84,10 +84,16 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-serif font-bold mb-2">管理後台</h1>
             <p className="text-muted-foreground">雅曼美髮沙龍後台管理系統</p>
           </div>
-          <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
-            <LogOut className="w-4 h-4 mr-2" />
-            登出
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setLocation("/admin/change-password")} data-testid="button-change-password">
+              <Lock className="w-4 h-4 mr-2" />
+              修改密碼
+            </Button>
+            <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
+              <LogOut className="w-4 h-4 mr-2" />
+              登出
+            </Button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">

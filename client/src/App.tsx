@@ -18,6 +18,7 @@ import AdminServices from "@/pages/AdminServices";
 import AdminStaff from "@/pages/AdminStaff";
 import AdminMarketing from "@/pages/AdminMarketing";
 import AdminSEO from "@/pages/AdminSEO";
+import AdminChangePassword from "@/pages/AdminChangePassword";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -36,6 +37,7 @@ function Router() {
       <Route path="/admin/staff" component={AdminStaff} />
       <Route path="/admin/marketing" component={AdminMarketing} />
       <Route path="/admin/seo" component={AdminSEO} />
+      <Route path="/admin/change-password" component={AdminChangePassword} />
       <Route component={NotFound} />
     </Switch>
   );

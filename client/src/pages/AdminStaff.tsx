@@ -32,6 +32,8 @@ export default function AdminStaff() {
     defaultValues: {
       name: "",
       role: "設計師",
+      email: null,
+      phone: null,
       specialty: "",
       yearsOfExperience: 0,
       photoUrl: null,
@@ -104,6 +106,8 @@ export default function AdminStaff() {
     form.reset({
       name: member.name,
       role: member.role,
+      email: member.email,
+      phone: member.phone,
       specialty: member.specialty || "",
       yearsOfExperience: member.yearsOfExperience || 0,
       photoUrl: member.photoUrl,
@@ -195,6 +199,43 @@ export default function AdminStaff() {
                             <SelectItem value="助理">助理</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            value={field.value || ""} 
+                            type="email"
+                            placeholder="email@example.com" 
+                            data-testid="input-email" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>電話</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            value={field.value || ""} 
+                            placeholder="例：0912-345-678" 
+                            data-testid="input-phone" 
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
