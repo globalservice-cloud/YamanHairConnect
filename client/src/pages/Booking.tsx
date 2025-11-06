@@ -31,8 +31,7 @@ export default function Booking() {
 
   const stylists = [
     { id: "none", name: "無指定", image: "" },
-    { id: "stylist1", name: "林美華", specialty: "染燙專家", image: stylist1 },
-    { id: "stylist2", name: "陳志明", specialty: "剪髮造型", image: stylist2 },
+    { id: "qiaoxuan", name: "巧宣", specialty: "資深設計師・27年經驗", image: require('@assets/IMG_3664_1762413101449.jpeg') },
   ];
 
   const timeSlots = [

@@ -38,16 +38,10 @@ export default function Home() {
 
   const stylists = [
     {
-      name: "林美華",
-      specialty: "染燙專家",
-      experience: "8年專業經驗",
-      image: stylist1,
-    },
-    {
-      name: "陳志明",
-      specialty: "剪髮造型",
-      experience: "10年專業經驗",
-      image: stylist2,
+      name: "巧宣",
+      specialty: "資深設計師",
+      experience: "27年專業經驗",
+      image: require('@assets/IMG_3664_1762413101449.jpeg'),
     },
   ];
 
@@ -131,7 +125,7 @@ export default function Home() {
 
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-4xl font-serif font-semibold text-center mb-12">專業團隊</h2>
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-1 gap-8 max-w-md mx-auto">
           {stylists.map((stylist, index) => (
             <StylistCard key={index} {...stylist} />
           ))}

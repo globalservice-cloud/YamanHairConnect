@@ -5,32 +5,11 @@ import stylist2 from '@assets/generated_images/Male_stylist_portrait_924b7d24.pn
 export default function Team() {
   const stylists = [
     {
-      name: "林美華",
-      specialty: "染燙專家 · 資深設計師",
-      experience: "8年專業經驗",
-      image: stylist1,
-      bio: "擅長各式染燙技術，對色彩搭配有獨到見解。細心傾聽每位顧客的需求，用專業技術實現您的理想髮型。",
-    },
-    {
-      name: "陳志明",
-      specialty: "剪髮造型 · 首席設計師",
-      experience: "10年專業經驗",
-      image: stylist2,
-      bio: "精通各種剪髮技巧，擅長根據臉型設計最適合的髮型。以親切的態度與專業的技術，讓每位顧客都能滿意離開。",
-    },
-    {
-      name: "王小芳",
-      specialty: "護髮專家",
-      experience: "6年專業經驗",
-      image: stylist1,
-      bio: "專注於髮質護理與頭皮健康，運用專業知識為您的秀髮提供最好的照顧。",
-    },
-    {
-      name: "李建國",
-      specialty: "造型設計",
-      experience: "7年專業經驗",
-      image: stylist2,
-      bio: "擅長新娘造型與特殊場合髮型設計，讓您在重要時刻展現最美的一面。",
+      name: "巧宣",
+      specialty: "資深設計師",
+      experience: "27年專業經驗",
+      image: require('@assets/IMG_3664_1762413101449.jpeg'),
+      bio: "擁有27年豐富經驗的資深設計師，精通各式剪髮、染燙技術。以專業的技術與溫暖的服務，為每位顧客打造最適合的髮型。",
     },
   ];
 
@@ -44,7 +23,7 @@ export default function Team() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-1 gap-8 max-w-md mx-auto">
           {stylists.map((stylist, index) => (
             <StylistCard key={index} {...stylist} />
           ))}
