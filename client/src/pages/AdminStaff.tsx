@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Pencil, Trash2, User, LogOut } from "lucide-react";
+import { Plus, Pencil, Trash2, User, LogOut, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
@@ -22,6 +23,9 @@ export default function AdminStaff() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: staff = [], isLoading } = useQuery<Staff[]>({
     queryKey: ["/api/staff"],
@@ -54,8 +58,7 @@ export default function AdminStaff() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
       toast({ title: "成功", description: "已新增員工" });
-      setIsDialogOpen(false);
-      form.reset();
+      handleCloseDialog();
     },
     onError: () => {
       toast({ title: "錯誤", description: "新增員工失敗", variant: "destructive" });
@@ -75,9 +78,7 @@ export default function AdminStaff() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
       toast({ title: "成功", description: "已更新員工資料" });
-      setIsDialogOpen(false);
-      setEditingStaff(null);
-      form.reset();
+      handleCloseDialog();
     },
     onError: () => {
       toast({ title: "錯誤", description: "更新員工失敗", variant: "destructive" });
@@ -101,8 +102,64 @@ export default function AdminStaff() {
     },
   });
 
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "錯誤", description: "請選擇圖片文件", variant: "destructive" });
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "錯誤", description: "圖片大小不能超過5MB", variant: "destructive" });
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPhotoPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    setUploadingPhoto(true);
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("上傳失敗");
+
+      const data = await response.json();
+      form.setValue("photoUrl", data.photoUrl);
+      toast({ title: "成功", description: "照片上傳成功" });
+    } catch (error) {
+      toast({ title: "錯誤", description: "照片上傳失敗", variant: "destructive" });
+      setPhotoPreview(null);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoPreview(null);
+    form.setValue("photoUrl", null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleEdit = (member: Staff) => {
     setEditingStaff(member);
+    setPhotoPreview(member.photoUrl);
     form.reset({
       name: member.name,
       role: member.role,
@@ -127,7 +184,11 @@ export default function AdminStaff() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingStaff(null);
+    setPhotoPreview(null);
     form.reset();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const designers = staff.filter(s => s.role === "設計師");
@@ -272,6 +333,67 @@ export default function AdminStaff() {
                       </FormItem>
                     )}
                   />
+
+                  {/* Photo Upload Section */}
+                  <div className="space-y-2">
+                    <Label>照片</Label>
+                    <div className="flex items-start gap-4">
+                      {/* Photo Preview */}
+                      <div className="flex-shrink-0">
+                        <Avatar className="w-32 h-32 border-2">
+                          {photoPreview ? (
+                            <AvatarImage src={photoPreview} alt="預覽" className="object-cover" />
+                          ) : (
+                            <AvatarFallback>
+                              <User className="w-16 h-16 text-muted-foreground" />
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                      </div>
+
+                      {/* Upload Controls */}
+                      <div className="flex-1 space-y-2">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                          data-testid="input-photo-file"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadingPhoto}
+                            data-testid="button-upload-photo"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            {uploadingPhoto ? "上傳中..." : "上傳照片"}
+                          </Button>
+                          {photoPreview && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleRemovePhoto}
+                              disabled={uploadingPhoto}
+                              data-testid="button-remove-photo"
+                            >
+                              <X className="w-4 h-4 mr-2" />
+                              移除照片
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          支援 JPG、PNG、GIF、WebP 格式，最大 5MB
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={handleCloseDialog} data-testid="button-cancel">
                       取消
@@ -304,9 +426,15 @@ export default function AdminStaff() {
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex items-start gap-3 flex-1">
-                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <User className="w-6 h-6 text-primary" />
-                            </div>
+                            <Avatar className="w-12 h-12 flex-shrink-0">
+                              {member.photoUrl ? (
+                                <AvatarImage src={member.photoUrl} alt={member.name} className="object-cover" />
+                              ) : (
+                                <AvatarFallback>
+                                  <User className="w-6 h-6 text-primary" />
+                                </AvatarFallback>
+                              )}
+                            </Avatar>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <h3 className="font-semibold">{member.name}</h3>
@@ -366,9 +494,15 @@ export default function AdminStaff() {
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex items-start gap-3 flex-1">
-                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <User className="w-6 h-6 text-primary" />
-                            </div>
+                            <Avatar className="w-12 h-12 flex-shrink-0">
+                              {member.photoUrl ? (
+                                <AvatarImage src={member.photoUrl} alt={member.name} className="object-cover" />
+                              ) : (
+                                <AvatarFallback>
+                                  <User className="w-6 h-6 text-primary" />
+                                </AvatarFallback>
+                              )}
+                            </Avatar>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <h3 className="font-semibold">{member.name}</h3>

@@ -1,24 +1,36 @@
+import { useQuery } from "@tanstack/react-query";
 import StylistCard from "@/components/StylistCard";
-import qiaoxuanImage from '@assets/IMG_3664_1762413101449.jpeg';
-import yianImage from '@assets/IMG_3667_1762413450872.jpeg';
+import type { Staff } from "@shared/schema";
 
 export default function Team() {
-  const stylists = [
-    {
-      name: "益安",
-      specialty: "資深設計師（總監）",
-      experience: "35年專業經驗",
-      image: yianImage,
-      bio: "擁有35年豐富經驗的資深總監，精通各式剪髮、染燙技術。以專業的技術領導團隊，為每位顧客提供最優質的美髮服務。",
-    },
-    {
-      name: "巧宣",
-      specialty: "資深設計師",
-      experience: "27年專業經驗",
-      image: qiaoxuanImage,
-      bio: "擁有27年豐富經驗的資深設計師，精通各式剪髮、染燙技術。以專業的技術與溫暖的服務，為每位顧客打造最適合的髮型。",
-    },
-  ];
+  const { data: allStaff = [], isLoading } = useQuery<Staff[]>({
+    queryKey: ["/api/staff/active"],
+  });
+
+  // Filter only designers
+  const designers = allStaff.filter(s => s.role === "設計師");
+
+  // Transform staff data to match StylistCard interface
+  const stylists = designers.map(designer => ({
+    name: designer.name,
+    specialty: designer.specialty || "專業設計師",
+    experience: designer.yearsOfExperience ? `${designer.yearsOfExperience}年專業經驗` : "豐富經驗",
+    image: designer.photoUrl || "",
+    bio: `擁有${designer.yearsOfExperience || "豐富"}年經驗的${designer.specialty || "專業設計師"}，精通各式剪髮、染燙技術。以專業的技術與溫暖的服務，為每位顧客打造最適合的髮型。`,
+  }));
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen py-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <h1 className="text-5xl font-serif font-bold mb-4">專業團隊</h1>
+            <p className="text-lg text-muted-foreground">載入中...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-12">
@@ -30,11 +42,17 @@ export default function Team() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {stylists.map((stylist, index) => (
-            <StylistCard key={index} {...stylist} />
-          ))}
-        </div>
+        {stylists.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">目前沒有設計師資料</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {stylists.map((stylist, index) => (
+              <StylistCard key={index} {...stylist} />
+            ))}
+          </div>
+        )}
 
         <div className="mt-16 p-8 bg-card rounded-2xl max-w-4xl mx-auto">
           <h2 className="text-2xl font-serif font-semibold mb-4 text-center">為什麼選擇雅曼</h2>

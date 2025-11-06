@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
 import {
   insertCustomerSchema,
   insertServiceSchema,
@@ -11,7 +14,50 @@ import {
   insertSeoSettingSchema
 } from "@shared/schema";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Configure multer for file uploads
+const storageConfig = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, path.join(__dirname, "..", "attached_assets"));
+  },
+  filename: (_req, file, cb) => {
+    const uniqueSuffix = Date.now();
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    cb(null, `${basename}_${uniqueSuffix}${ext}`);
+  },
+});
+
+const upload = multer({ 
+  storage: storageConfig,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (_req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) {
+      cb(null, true);
+    } else {
+      cb(new Error("只允許上傳圖片文件"));
+    }
+  },
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // File upload endpoint
+  app.post("/api/upload", upload.single("photo"), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "請選擇要上傳的圖片" });
+      }
+      const photoUrl = `/attached_assets/${req.file.filename}`;
+      res.json({ photoUrl });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Customers
   app.get("/api/customers", async (_req, res) => {
     const customers = await storage.getAllCustomers();
