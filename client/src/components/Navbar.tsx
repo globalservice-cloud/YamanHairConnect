@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone, Settings } from "lucide-react";
+import { Menu, X, Phone, Settings, Download } from "lucide-react";
 import { SiLine } from "react-icons/si";
 
 export default function Navbar() {
@@ -16,6 +16,10 @@ export default function Navbar() {
     { path: "/contact", label: "聯絡我們" },
     { path: "/admin", label: "後台管理", icon: Settings },
   ];
+
+  const handleDownloadPage = () => {
+    window.print();
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
@@ -41,6 +45,10 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleDownloadPage} data-testid="button-download">
+              <Download className="w-4 h-4 mr-2" />
+              下載頁面
+            </Button>
             <a href="tel:02-89513058">
               <Button variant="outline" size="sm" data-testid="button-phone">
                 <Phone className="w-4 h-4 mr-2" />
@@ -83,6 +91,10 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 mt-4">
+                <Button variant="ghost" className="w-full" onClick={handleDownloadPage} data-testid="button-mobile-download">
+                  <Download className="w-4 h-4 mr-2" />
+                  下載頁面
+                </Button>
                 <a href="tel:02-89513058">
                   <Button variant="outline" className="w-full" data-testid="button-mobile-phone">
                     <Phone className="w-4 h-4 mr-2" />
