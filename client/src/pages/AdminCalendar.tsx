@@ -208,7 +208,10 @@ export default function AdminCalendar() {
                           >
                             <div className="font-medium truncate">{booking.bookingTime}</div>
                             <div className="truncate text-muted-foreground">{booking.customerName}</div>
-                            <div className="truncate text-muted-foreground">{booking.serviceName}</div>
+                            <div className="truncate text-muted-foreground">{booking.serviceNames}</div>
+                            {booking.status === "pending" && (
+                              <Badge variant="outline" className="text-xs mt-0.5">待審核</Badge>
+                            )}
                           </button>
                         ))}
                       </div>
@@ -240,10 +243,16 @@ export default function AdminCalendar() {
                       {selectedBooking.customerPhone}
                     </div>
                   </div>
-                  <div>
+                  <div className="col-span-2">
                     <div className="text-sm text-muted-foreground">服務項目</div>
                     <div className="font-medium" data-testid="text-service-name">
-                      {selectedBooking.serviceName}
+                      {selectedBooking.serviceNames}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">預估時間</div>
+                    <div className="font-medium" data-testid="text-total-duration">
+                      約 {selectedBooking.totalDuration} 分鐘
                     </div>
                   </div>
                   <div>
@@ -271,6 +280,15 @@ export default function AdminCalendar() {
                     </div>
                   </div>
                 </div>
+
+                {selectedBooking.customerEmail && (
+                  <div>
+                    <div className="text-sm text-muted-foreground">Email</div>
+                    <div className="font-medium" data-testid="text-customer-email">
+                      {selectedBooking.customerEmail}
+                    </div>
+                  </div>
+                )}
 
                 {selectedBooking.customerLineId && (
                   <div>
@@ -346,21 +364,53 @@ export default function AdminCalendar() {
                 </div>
               </div>
             )}
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsEditDialogOpen(false)}
-                data-testid="button-cancel"
-              >
-                取消
-              </Button>
-              <Button
-                onClick={handleUpdateBooking}
-                disabled={updateBookingMutation.isPending}
-                data-testid="button-update-booking"
-              >
-                {updateBookingMutation.isPending ? "更新中..." : "更新預約"}
-              </Button>
+            <DialogFooter className="flex flex-col sm:flex-row gap-2">
+              {selectedBooking && selectedBooking.status === "pending" && (
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      setEditStatus("cancelled");
+                      setTimeout(() => handleUpdateBooking(), 0);
+                    }}
+                    disabled={updateBookingMutation.isPending}
+                    className="flex-1 sm:flex-none"
+                    data-testid="button-reject-booking"
+                  >
+                    拒絕預約
+                  </Button>
+                  <Button
+                    variant="default"
+                    onClick={() => {
+                      setEditStatus("confirmed");
+                      setTimeout(() => handleUpdateBooking(), 0);
+                    }}
+                    disabled={updateBookingMutation.isPending}
+                    className="flex-1 sm:flex-none"
+                    data-testid="button-approve-booking"
+                  >
+                    確認預約
+                  </Button>
+                </div>
+              )}
+              <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                  className="flex-1 sm:flex-none"
+                  data-testid="button-cancel"
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={handleUpdateBooking}
+                  disabled={updateBookingMutation.isPending}
+                  className="flex-1 sm:flex-none"
+                  data-testid="button-update-booking"
+                >
+                  {updateBookingMutation.isPending ? "更新中..." : "更新預約"}
+                </Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
