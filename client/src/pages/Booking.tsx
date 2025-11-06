@@ -7,8 +7,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Scissors, Palette, Waves, Sparkles, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import stylist1 from '@assets/generated_images/Female_stylist_portrait_c9075e53.png';
-import stylist2 from '@assets/generated_images/Male_stylist_portrait_924b7d24.png';
+import qiaoxuanImage from '@assets/IMG_3664_1762413101449.jpeg';
+import yianImage from '@assets/IMG_3667_1762413450872.jpeg';
 
 export default function Booking() {
   const [step, setStep] = useState(1);
@@ -31,7 +31,8 @@ export default function Booking() {
 
   const stylists = [
     { id: "none", name: "無指定", image: "" },
-    { id: "qiaoxuan", name: "巧宣", specialty: "資深設計師・27年經驗", image: require('@assets/IMG_3664_1762413101449.jpeg') },
+    { id: "yian", name: "益安", specialty: "資深設計師（總監）・35年經驗", image: yianImage },
+    { id: "qiaoxuan", name: "巧宣", specialty: "資深設計師・27年經驗", image: qiaoxuanImage },
   ];
 
   const timeSlots = [

@@ -8,8 +8,8 @@ import heroImage from '@assets/generated_images/Cozy_salon_interior_hero_34f24d2
 import cuttingImage from '@assets/generated_images/Hair_cutting_service_ac14a7f9.png';
 import coloringImage from '@assets/generated_images/Hair_coloring_service_8a98426c.png';
 import treatmentImage from '@assets/generated_images/Hair_treatment_service_44b1f4a0.png';
-import stylist1 from '@assets/generated_images/Female_stylist_portrait_c9075e53.png';
-import stylist2 from '@assets/generated_images/Male_stylist_portrait_924b7d24.png';
+import qiaoxuanImage from '@assets/IMG_3664_1762413101449.jpeg';
+import yianImage from '@assets/IMG_3667_1762413450872.jpeg';
 
 export default function Home() {
   const services = [
@@ -38,10 +38,16 @@ export default function Home() {
 
   const stylists = [
     {
+      name: "益安",
+      specialty: "資深設計師（總監）",
+      experience: "35年專業經驗",
+      image: yianImage,
+    },
+    {
       name: "巧宣",
       specialty: "資深設計師",
       experience: "27年專業經驗",
-      image: require('@assets/IMG_3664_1762413101449.jpeg'),
+      image: qiaoxuanImage,
     },
   ];
 
@@ -125,7 +131,7 @@ export default function Home() {
 
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-4xl font-serif font-semibold text-center mb-12">專業團隊</h2>
-        <div className="grid md:grid-cols-1 gap-8 max-w-md mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {stylists.map((stylist, index) => (
             <StylistCard key={index} {...stylist} />
           ))}
