@@ -1,10 +1,10 @@
 import ServiceCard from "@/components/ServiceCard";
 import { Scissors, Palette, Waves, Sparkles, Droplets } from "lucide-react";
-import washingImage from '@assets/stock_images/warm_friendly_hairdr_d03df2ef.jpg';
-import cuttingImage from '@assets/stock_images/professional_hairsty_3e89cc75.jpg';
-import coloringImage from '@assets/stock_images/hair_coloring_dyeing_914ade7b.jpg';
-import permingImage from '@assets/stock_images/hair_perming_styling_ff79ea54.jpg';
-import treatmentImage from '@assets/stock_images/hair_treatment_condi_8ab38a9b.jpg';
+import washingImage from '@assets/stock_images/clean_professional_h_d5fc4d99.jpg';
+import cuttingImage from '@assets/stock_images/professional_hairdre_9015c124.jpg';
+import coloringImage from '@assets/stock_images/professional_hair_co_3a1117ee.jpg';
+import permingImage from '@assets/stock_images/hair_perm_curling_se_31f1e998.jpg';
+import treatmentImage from '@assets/stock_images/hair_treatment_servi_48a329f3.jpg';
 
 export default function Services() {
   const services = [
