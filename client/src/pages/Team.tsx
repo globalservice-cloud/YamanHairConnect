@@ -1,0 +1,77 @@
+import StylistCard from "@/components/StylistCard";
+import stylist1 from '@assets/generated_images/Female_stylist_portrait_c9075e53.png';
+import stylist2 from '@assets/generated_images/Male_stylist_portrait_924b7d24.png';
+
+export default function Team() {
+  const stylists = [
+    {
+      name: "林美華",
+      specialty: "染燙專家 · 資深設計師",
+      experience: "8年專業經驗",
+      image: stylist1,
+      bio: "擅長各式染燙技術，對色彩搭配有獨到見解。細心傾聽每位顧客的需求，用專業技術實現您的理想髮型。",
+    },
+    {
+      name: "陳志明",
+      specialty: "剪髮造型 · 首席設計師",
+      experience: "10年專業經驗",
+      image: stylist2,
+      bio: "精通各種剪髮技巧，擅長根據臉型設計最適合的髮型。以親切的態度與專業的技術，讓每位顧客都能滿意離開。",
+    },
+    {
+      name: "王小芳",
+      specialty: "護髮專家",
+      experience: "6年專業經驗",
+      image: stylist1,
+      bio: "專注於髮質護理與頭皮健康，運用專業知識為您的秀髮提供最好的照顧。",
+    },
+    {
+      name: "李建國",
+      specialty: "造型設計",
+      experience: "7年專業經驗",
+      image: stylist2,
+      bio: "擅長新娘造型與特殊場合髮型設計，讓您在重要時刻展現最美的一面。",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen py-12">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-serif font-bold mb-4">專業團隊</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            我們的設計師團隊擁有豐富經驗與專業技術，以真誠的態度為您服務
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          {stylists.map((stylist, index) => (
+            <StylistCard key={index} {...stylist} />
+          ))}
+        </div>
+
+        <div className="mt-16 p-8 bg-card rounded-2xl max-w-4xl mx-auto">
+          <h2 className="text-2xl font-serif font-semibold mb-4 text-center">為什麼選擇雅曼</h2>
+          <div className="grid md:grid-cols-2 gap-6 text-muted-foreground">
+            <div>
+              <h3 className="font-semibold text-foreground mb-2">專業認證</h3>
+              <p className="text-sm">所有設計師均經過專業培訓與認證，持續進修最新技術</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground mb-2">客製服務</h3>
+              <p className="text-sm">根據每位顧客的需求，提供最適合的專業建議</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground mb-2">溫馨環境</h3>
+              <p className="text-sm">如家般舒適的空間，讓您在放鬆中享受美髮時光</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground mb-2">品質保證</h3>
+              <p className="text-sm">使用頂級美髮產品，確保最佳服務品質</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
