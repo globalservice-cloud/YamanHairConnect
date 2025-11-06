@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -7,8 +8,17 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Scissors, Palette, Waves, Sparkles, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import type { Service } from "@shared/schema";
 import qiaoxuanImage from '@assets/IMG_3664_1762413101449.jpeg';
 import yianImage from '@assets/IMG_3667_1762413450872.jpeg';
+
+const getServiceIcon = (serviceName: string) => {
+  if (serviceName.includes("洗")) return Sparkles;
+  if (serviceName.includes("剪")) return Scissors;
+  if (serviceName.includes("染")) return Palette;
+  if (serviceName.includes("燙")) return Waves;
+  return Sparkles;
+};
 
 export default function Booking() {
   const [step, setStep] = useState(1);
@@ -21,13 +31,9 @@ export default function Booking() {
   const [customerLine, setCustomerLine] = useState("");
   const { toast } = useToast();
 
-  const services = [
-    { id: "wash", name: "洗髮", price: "NT$ 250", icon: Sparkles },
-    { id: "haircut", name: "專業剪髮", price: "NT$ 400", icon: Scissors },
-    { id: "coloring", name: "時尚染髮", price: "NT$ 2,000 起", icon: Palette },
-    { id: "perm", name: "質感燙髮", price: "NT$ 2,000 起", icon: Waves },
-    { id: "treatment", name: "深層護髮", price: "NT$ 800 起", icon: Sparkles },
-  ];
+  const { data: services = [], isLoading: servicesLoading } = useQuery<Service[]>({
+    queryKey: ["/api/services/active"],
+  });
 
   const stylists = [
     { id: "none", name: "無指定", image: "" },
@@ -65,17 +71,43 @@ export default function Booking() {
     setStep(step + 1);
   };
 
+  const createBookingMutation = useMutation({
+    mutationFn: async () => {
+      const service = services.find(s => s.id === selectedService);
+      const stylist = stylists.find(s => s.id === selectedStylist);
+      
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId: null,
+          customerName,
+          customerPhone,
+          customerLineId: customerLine || null,
+          serviceId: selectedService,
+          serviceName: service?.name || "",
+          stylistName: stylist?.name || "",
+          bookingDate: selectedDate?.toISOString().split('T')[0] || "",
+          bookingTime: selectedTime,
+          status: "pending",
+          notes: null,
+        }),
+      });
+      
+      if (!response.ok) throw new Error("Failed to create booking");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "預約成功！", description: "我們已收到您的預約，將盡快與您確認。" });
+      setStep(5);
+    },
+    onError: () => {
+      toast({ title: "預約失敗", description: "請稍後再試或聯繫我們。", variant: "destructive" });
+    },
+  });
+
   const handleSubmit = () => {
-    console.log("Booking submitted:", {
-      service: selectedService,
-      stylist: selectedStylist,
-      date: selectedDate,
-      time: selectedTime,
-      name: customerName,
-      phone: customerPhone,
-      line: customerLine,
-    });
-    setStep(5);
+    createBookingMutation.mutate();
   };
 
   const resetForm = () => {
@@ -137,22 +169,35 @@ export default function Booking() {
             {step === 1 && (
               <RadioGroup value={selectedService} onValueChange={setSelectedService}>
                 <div className="grid md:grid-cols-2 gap-4">
-                  {services.map((service) => (
-                    <Label
-                      key={service.id}
-                      htmlFor={service.id}
-                      className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer hover-elevate ${
-                        selectedService === service.id ? "border-primary bg-primary/5" : ""
-                      }`}
-                    >
-                      <RadioGroupItem value={service.id} id={service.id} data-testid={`radio-service-${service.id}`} />
-                      <service.icon className="w-8 h-8 text-primary flex-shrink-0" />
-                      <div className="flex-1">
-                        <div className="font-semibold">{service.name}</div>
-                        <div className="text-sm text-muted-foreground">{service.price}</div>
-                      </div>
-                    </Label>
-                  ))}
+                  {servicesLoading ? (
+                    <div className="col-span-2 text-center py-8 text-muted-foreground">載入中...</div>
+                  ) : services.length === 0 ? (
+                    <div className="col-span-2 text-center py-8 text-muted-foreground">暫無可用服務</div>
+                  ) : (
+                    services.map((service) => {
+                      const Icon = getServiceIcon(service.name);
+                      const priceDisplay = service.priceNote 
+                        ? `NT$ ${service.price.toLocaleString()} ${service.priceNote}`
+                        : `NT$ ${service.price.toLocaleString()}`;
+                      
+                      return (
+                        <Label
+                          key={service.id}
+                          htmlFor={service.id}
+                          className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer hover-elevate ${
+                            selectedService === service.id ? "border-primary bg-primary/5" : ""
+                          }`}
+                        >
+                          <RadioGroupItem value={service.id} id={service.id} data-testid={`radio-service-${service.id}`} />
+                          <Icon className="w-8 h-8 text-primary flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="font-semibold">{service.name}</div>
+                            <div className="text-sm text-muted-foreground">{priceDisplay}</div>
+                          </div>
+                        </Label>
+                      );
+                    })
+                  )}
                 </div>
               </RadioGroup>
             )}
@@ -300,8 +345,12 @@ export default function Booking() {
                   <ChevronLeft className="w-4 h-4 mr-2" />
                   上一步
                 </Button>
-                <Button onClick={handleNext} data-testid="button-next">
-                  {step === 4 ? "確認預約" : "下一步"}
+                <Button 
+                  onClick={handleNext} 
+                  disabled={step === 4 && createBookingMutation.isPending}
+                  data-testid="button-next"
+                >
+                  {step === 4 ? (createBookingMutation.isPending ? "預約中..." : "確認預約") : "下一步"}
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>

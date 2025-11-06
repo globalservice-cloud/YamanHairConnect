@@ -1,67 +1,79 @@
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User, Scissors, Phone, Mail, LogOut } from "lucide-react";
+import { Calendar, Users, Scissors, TrendingUp, Search, LogOut, CalendarDays } from "lucide-react";
 import { useLocation } from "wouter";
+import type { Booking } from "@shared/schema";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
 
-  const mockBookings = [
-    {
-      id: 1,
-      customerName: "王小明",
-      phone: "0912-345-678",
-      service: "專業剪髮",
-      stylist: "林美華",
-      date: "2024-11-15",
-      time: "14:00",
-      status: "confirmed",
-    },
-    {
-      id: 2,
-      customerName: "李美玲",
-      phone: "0923-456-789",
-      service: "時尚染髮",
-      stylist: "陳志明",
-      date: "2024-11-15",
-      time: "15:30",
-      status: "pending",
-    },
-    {
-      id: 3,
-      customerName: "張大華",
-      phone: "0934-567-890",
-      service: "質感燙髮",
-      stylist: "無指定",
-      date: "2024-11-16",
-      time: "10:00",
-      status: "confirmed",
-    },
-    {
-      id: 4,
-      customerName: "林小芬",
-      phone: "0945-678-901",
-      service: "深層護髮",
-      stylist: "林美華",
-      date: "2024-11-16",
-      time: "16:00",
-      status: "pending",
-    },
-  ];
+  const { data: bookings = [] } = useQuery<Booking[]>({
+    queryKey: ["/api/bookings"],
+  });
+
+  const today = new Date().toISOString().split("T")[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+
+  const todayBookings = bookings.filter(b => b.bookingDate === today);
+  const tomorrowBookings = bookings.filter(b => b.bookingDate === tomorrow);
+  const pendingBookings = bookings.filter(b => b.status === "pending");
 
   const handleLogout = () => {
     console.log("Logging out");
     setLocation("/admin");
   };
 
+  const menuItems = [
+    {
+      title: "預約月曆",
+      description: "查看月曆視圖和管理預約",
+      icon: CalendarDays,
+      path: "/admin/calendar",
+      color: "text-blue-600",
+      testId: "nav-calendar"
+    },
+    {
+      title: "客戶管理",
+      description: "管理客戶資料和消費紀錄",
+      icon: Users,
+      path: "/admin/customers",
+      color: "text-green-600",
+      testId: "nav-customers"
+    },
+    {
+      title: "服務項目",
+      description: "新增、編輯和管理服務項目",
+      icon: Scissors,
+      path: "/admin/services",
+      color: "text-purple-600",
+      testId: "nav-services"
+    },
+    {
+      title: "行銷活動",
+      description: "建立和管理促銷活動",
+      icon: TrendingUp,
+      path: "/admin/marketing",
+      color: "text-orange-600",
+      testId: "nav-marketing"
+    },
+    {
+      title: "SEO 設定",
+      description: "管理網站 SEO 元數據",
+      icon: Search,
+      path: "/admin/seo",
+      color: "text-pink-600",
+      testId: "nav-seo"
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-muted/30 py-8">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-serif font-bold mb-2">預約管理</h1>
+            <h1 className="text-4xl font-serif font-bold mb-2">管理後台</h1>
             <p className="text-muted-foreground">雅曼美髮沙龍後台管理系統</p>
           </div>
           <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
@@ -77,8 +89,10 @@ export default function AdminDashboard() {
               <Calendar className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">2</div>
-              <p className="text-xs text-muted-foreground mt-1">待確認：1</p>
+              <div className="text-3xl font-bold">{todayBookings.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                待確認：{todayBookings.filter(b => b.status === "pending").length}
+              </p>
             </CardContent>
           </Card>
 
@@ -88,90 +102,47 @@ export default function AdminDashboard() {
               <Calendar className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">2</div>
-              <p className="text-xs text-muted-foreground mt-1">待確認：1</p>
+              <div className="text-3xl font-bold">{tomorrowBookings.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                待確認：{tomorrowBookings.filter(b => b.status === "pending").length}
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
-              <CardTitle className="text-sm font-medium">本週預約</CardTitle>
+              <CardTitle className="text-sm font-medium">待確認預約</CardTitle>
               <Calendar className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">8</div>
-              <p className="text-xs text-muted-foreground mt-1">總計預約數</p>
+              <div className="text-3xl font-bold">{pendingBookings.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">總預約數：{bookings.length}</p>
             </CardContent>
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>預約列表</CardTitle>
-            <CardDescription>查看與管理所有預約</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {mockBookings.map((booking) => (
-                <Card key={booking.id} className="hover-elevate">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="space-y-3 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-lg">{booking.customerName}</h3>
-                          <Badge variant={booking.status === "confirmed" ? "default" : "secondary"}>
-                            {booking.status === "confirmed" ? "已確認" : "待確認"}
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid sm:grid-cols-2 gap-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Scissors className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-muted-foreground">{booking.service}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-muted-foreground">{booking.stylist}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-muted-foreground">
-                              {booking.date} {booking.time}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-muted-foreground">{booking.phone}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        {booking.status === "pending" && (
-                          <Button 
-                            size="sm" 
-                            onClick={() => console.log("Confirm booking:", booking.id)}
-                            data-testid={`button-confirm-${booking.id}`}
-                          >
-                            確認
-                          </Button>
-                        )}
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => console.log("Cancel booking:", booking.id)}
-                          data-testid={`button-cancel-${booking.id}`}
-                        >
-                          取消
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {menuItems.map((item) => (
+            <Card
+              key={item.path}
+              className="hover-elevate active-elevate-2 cursor-pointer"
+              onClick={() => setLocation(item.path)}
+              data-testid={item.testId}
+            >
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg bg-muted ${item.color}`}>
+                    <item.icon className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg">{item.title}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>{item.description}</CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
