@@ -5,9 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
-import { Scissors, Palette, Waves, Sparkles, ChevronRight, ChevronLeft, Check, User } from "lucide-react";
+import { Scissors, Palette, Waves, Sparkles, ChevronRight, ChevronLeft, Check, User, Clock, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Service, Staff } from "@shared/schema";
 
 const getServiceIcon = (serviceName: string) => {
@@ -20,12 +22,13 @@ const getServiceIcon = (serviceName: string) => {
 
 export default function Booking() {
   const [step, setStep] = useState(1);
-  const [selectedService, setSelectedService] = useState("");
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedStylist, setSelectedStylist] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTime, setSelectedTime] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const [customerLine, setCustomerLine] = useState("");
   const { toast } = useToast();
 
@@ -53,9 +56,32 @@ export default function Booking() {
     "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
   ];
 
+  const toggleService = (serviceId: string) => {
+    setSelectedServices(prev => 
+      prev.includes(serviceId) 
+        ? prev.filter(id => id !== serviceId)
+        : [...prev, serviceId]
+    );
+  };
+
+  const getTotalDuration = () => {
+    return selectedServices.reduce((total, serviceId) => {
+      const service = services.find(s => s.id === serviceId);
+      return total + (service?.duration || 0);
+    }, 0);
+  };
+
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0 && mins > 0) return `${hours}小時${mins}分鐘`;
+    if (hours > 0) return `${hours}小時`;
+    return `${mins}分鐘`;
+  };
+
   const handleNext = () => {
-    if (step === 1 && !selectedService) {
-      toast({ title: "請選擇服務項目", variant: "destructive" });
+    if (step === 1 && selectedServices.length === 0) {
+      toast({ title: "請選擇至少一項服務", variant: "destructive" });
       return;
     }
     if (step === 2 && !selectedStylist) {
@@ -79,8 +105,10 @@ export default function Booking() {
 
   const createBookingMutation = useMutation({
     mutationFn: async () => {
-      const service = services.find(s => s.id === selectedService);
+      const selectedServiceObjects = services.filter(s => selectedServices.includes(s.id));
+      const serviceNames = selectedServiceObjects.map(s => s.name).join("、");
       const stylist = stylists.find(s => s.id === selectedStylist);
+      const totalDuration = getTotalDuration();
       
       const response = await fetch("/api/bookings", {
         method: "POST",
@@ -89,9 +117,12 @@ export default function Booking() {
           customerId: null,
           customerName,
           customerPhone,
+          customerEmail: customerEmail || null,
           customerLineId: customerLine || null,
-          serviceId: selectedService,
-          serviceName: service?.name || "",
+          customerLineUserId: null,
+          serviceIds: selectedServices,
+          serviceNames,
+          totalDuration,
           stylistId: selectedStylist === "none" ? null : selectedStylist,
           stylistName: stylist?.name || "",
           assistantId: null,
@@ -107,7 +138,7 @@ export default function Booking() {
       return response.json();
     },
     onSuccess: () => {
-      toast({ title: "預約成功！", description: "我們已收到您的預約，將盡快與您確認。" });
+      toast({ title: "預約成功！", description: "我們已收到您的預約，管理員將盡快確認。" });
       setStep(5);
     },
     onError: () => {
@@ -121,12 +152,13 @@ export default function Booking() {
 
   const resetForm = () => {
     setStep(1);
-    setSelectedService("");
+    setSelectedServices([]);
     setSelectedStylist("");
     setSelectedDate(new Date());
     setSelectedTime("");
     setCustomerName("");
     setCustomerPhone("");
+    setCustomerEmail("");
     setCustomerLine("");
   };
 
@@ -176,39 +208,65 @@ export default function Booking() {
           </CardHeader>
           <CardContent>
             {step === 1 && (
-              <RadioGroup value={selectedService} onValueChange={setSelectedService}>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {servicesLoading ? (
-                    <div className="col-span-2 text-center py-8 text-muted-foreground">載入中...</div>
-                  ) : services.length === 0 ? (
-                    <div className="col-span-2 text-center py-8 text-muted-foreground">暫無可用服務</div>
-                  ) : (
-                    services.map((service) => {
-                      const Icon = getServiceIcon(service.name);
-                      const priceDisplay = service.priceNote 
-                        ? `NT$ ${service.price.toLocaleString()} ${service.priceNote}`
-                        : `NT$ ${service.price.toLocaleString()}`;
-                      
-                      return (
-                        <Label
-                          key={service.id}
-                          htmlFor={service.id}
-                          className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer hover-elevate ${
-                            selectedService === service.id ? "border-primary bg-primary/5" : ""
-                          }`}
-                        >
-                          <RadioGroupItem value={service.id} id={service.id} data-testid={`radio-service-${service.id}`} />
-                          <Icon className="w-8 h-8 text-primary flex-shrink-0" />
-                          <div className="flex-1">
-                            <div className="font-semibold">{service.name}</div>
-                            <div className="text-sm text-muted-foreground">{priceDisplay}</div>
-                          </div>
-                        </Label>
-                      );
-                    })
-                  )}
-                </div>
-              </RadioGroup>
+              <div className="space-y-4">
+                {servicesLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">載入中...</div>
+                ) : services.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">暫無可用服務</div>
+                ) : (
+                  <>
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        可複選多項服務，系統會自動計算所需時間
+                      </AlertDescription>
+                    </Alert>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {services.map((service) => {
+                        const Icon = getServiceIcon(service.name);
+                        const priceDisplay = service.priceNote 
+                          ? `NT$ ${service.price.toLocaleString()} ${service.priceNote}`
+                          : `NT$ ${service.price.toLocaleString()}`;
+                        const isSelected = selectedServices.includes(service.id);
+                        
+                        return (
+                          <Label
+                            key={service.id}
+                            htmlFor={service.id}
+                            className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer hover-elevate ${
+                              isSelected ? "border-primary bg-primary/5" : ""
+                            }`}
+                          >
+                            <Checkbox 
+                              id={service.id} 
+                              checked={isSelected}
+                              onCheckedChange={() => toggleService(service.id)}
+                              data-testid={`checkbox-service-${service.id}`} 
+                            />
+                            <Icon className="w-8 h-8 text-primary flex-shrink-0" />
+                            <div className="flex-1">
+                              <div className="font-semibold">{service.name}</div>
+                              <div className="text-sm text-muted-foreground">{priceDisplay}</div>
+                              <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                <Clock className="w-3 h-3" />
+                                約 {service.duration} 分鐘
+                              </div>
+                            </div>
+                          </Label>
+                        );
+                      })}
+                    </div>
+                    {selectedServices.length > 0 && (
+                      <div className="p-4 bg-primary/10 rounded-xl">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold">預估總時間：</span>
+                          <span className="text-lg font-bold text-primary">{formatDuration(getTotalDuration())}</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             )}
 
             {step === 2 && (
@@ -277,6 +335,12 @@ export default function Booking() {
 
             {step === 4 && (
               <div className="space-y-4">
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    預約需要管理員確認後才會生效，我們將透過電話、Email或LINE通知您
+                  </AlertDescription>
+                </Alert>
                 <div>
                   <Label htmlFor="name">姓名 *</Label>
                   <Input
@@ -298,6 +362,17 @@ export default function Booking() {
                   />
                 </div>
                 <div>
+                  <Label htmlFor="email">Email (選填)</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="接收預約確認信"
+                    data-testid="input-email"
+                  />
+                </div>
+                <div>
                   <Label htmlFor="line">LINE ID (選填)</Label>
                   <Input
                     id="line"
@@ -315,16 +390,20 @@ export default function Booking() {
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Check className="w-10 h-10 text-primary" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-2">預約成功！</h3>
+                <h3 className="text-2xl font-semibold mb-2">預約已送出！</h3>
                 <p className="text-muted-foreground mb-6">
-                  我們已收到您的預約，將盡快與您確認。
+                  我們已收到您的預約，管理員確認後將透過電話、Email或LINE通知您
                 </p>
                 <div className="bg-card p-6 rounded-xl max-w-md mx-auto text-left space-y-2">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">服務項目：</span>
                     <span className="font-medium">
-                      {services.find((s) => s.id === selectedService)?.name}
+                      {selectedServices.map(id => services.find(s => s.id === id)?.name).join("、")}
                     </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">預估時間：</span>
+                    <span className="font-medium">{formatDuration(getTotalDuration())}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">設計師：</span>

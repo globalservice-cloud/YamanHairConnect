@@ -93,11 +93,11 @@ export class MemStorage implements IStorage {
     this.users.set(adminId, { ...defaultAdminUser, id: adminId });
 
     const defaultServices: InsertService[] = [
-      { name: "洗髮", description: "舒適的洗髮體驗", price: 250, priceNote: null, isActive: true },
-      { name: "專業剪髮", description: "根據臉型設計專屬髮型", price: 400, priceNote: null, isActive: true },
-      { name: "時尚染髮", description: "使用頂級染劑", price: 2000, priceNote: "起", isActive: true },
-      { name: "質感燙髮", description: "自然捲度與蓬鬆感", price: 2000, priceNote: "起", isActive: true },
-      { name: "深層護髮", description: "深層修護受損髮質", price: 800, priceNote: "起", isActive: true },
+      { name: "洗髮", description: "舒適的洗髮體驗", price: 250, priceNote: null, duration: 30, isActive: true },
+      { name: "專業剪髮", description: "根據臉型設計專屬髮型", price: 400, priceNote: null, duration: 60, isActive: true },
+      { name: "時尚染髮", description: "使用頂級染劑", price: 2000, priceNote: "起", duration: 120, isActive: true },
+      { name: "質感燙髮", description: "自然捲度與蓬鬆感", price: 2000, priceNote: "起", duration: 150, isActive: true },
+      { name: "深層護髮", description: "深層修護受損髮質", price: 800, priceNote: "起", duration: 45, isActive: true },
     ];
 
     defaultServices.forEach(service => {
