@@ -4,7 +4,7 @@ import washingImage from '@assets/stock_images/clean_professional_h_d5fc4d99.jpg
 import cuttingImage from '@assets/stock_images/professional_hairdre_9015c124.jpg';
 import coloringImage from '@assets/stock_images/professional_hair_co_3a1117ee.jpg';
 import permingImage from '@assets/stock_images/hair_perm_curling_se_31f1e998.jpg';
-import treatmentImage from '@assets/stock_images/hair_treatment_servi_48a329f3.jpg';
+import treatmentImage from '@assets/stock_images/woman_relaxing_enjoy_c6bb20ce.jpg';
 
 export default function Services() {
   const services = [
