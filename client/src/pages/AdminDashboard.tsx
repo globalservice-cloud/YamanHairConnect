@@ -51,6 +51,14 @@ export default function AdminDashboard() {
       testId: "nav-services"
     },
     {
+      title: "員工管理",
+      description: "管理設計師和助理",
+      icon: Users,
+      path: "/admin/staff",
+      color: "text-indigo-600",
+      testId: "nav-staff"
+    },
+    {
       title: "行銷活動",
       description: "建立和管理促銷活動",
       icon: TrendingUp,

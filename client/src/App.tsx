@@ -15,6 +15,7 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import AdminCalendar from "@/pages/AdminCalendar";
 import AdminCustomers from "@/pages/AdminCustomers";
 import AdminServices from "@/pages/AdminServices";
+import AdminStaff from "@/pages/AdminStaff";
 import AdminMarketing from "@/pages/AdminMarketing";
 import AdminSEO from "@/pages/AdminSEO";
 import NotFound from "@/pages/not-found";
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/admin/calendar" component={AdminCalendar} />
       <Route path="/admin/customers" component={AdminCustomers} />
       <Route path="/admin/services" component={AdminServices} />
+      <Route path="/admin/staff" component={AdminStaff} />
       <Route path="/admin/marketing" component={AdminMarketing} />
       <Route path="/admin/seo" component={AdminSEO} />
       <Route component={NotFound} />

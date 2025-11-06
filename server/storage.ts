@@ -2,6 +2,7 @@ import {
   type User, type InsertUser,
   type Customer, type InsertCustomer,
   type Service, type InsertService,
+  type Staff, type InsertStaff,
   type Booking, type InsertBooking,
   type PurchaseRecord, type InsertPurchaseRecord,
   type MarketingCampaign, type InsertMarketingCampaign,
@@ -27,6 +28,14 @@ export interface IStorage {
   createService(service: InsertService): Promise<Service>;
   updateService(id: string, service: Partial<InsertService>): Promise<Service | undefined>;
   deleteService(id: string): Promise<boolean>;
+  
+  getAllStaff(): Promise<Staff[]>;
+  getActiveStaff(): Promise<Staff[]>;
+  getStaffByRole(role: string): Promise<Staff[]>;
+  getStaff(id: string): Promise<Staff | undefined>;
+  createStaff(staff: InsertStaff): Promise<Staff>;
+  updateStaff(id: string, staff: Partial<InsertStaff>): Promise<Staff | undefined>;
+  deleteStaff(id: string): Promise<boolean>;
   
   getAllBookings(): Promise<Booking[]>;
   getBooking(id: string): Promise<Booking | undefined>;
@@ -55,6 +64,7 @@ export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private customers: Map<string, Customer>;
   private services: Map<string, Service>;
+  private staff: Map<string, Staff>;
   private bookings: Map<string, Booking>;
   private purchaseRecords: Map<string, PurchaseRecord>;
   private marketingCampaigns: Map<string, MarketingCampaign>;
@@ -64,6 +74,7 @@ export class MemStorage implements IStorage {
     this.users = new Map();
     this.customers = new Map();
     this.services = new Map();
+    this.staff = new Map();
     this.bookings = new Map();
     this.purchaseRecords = new Map();
     this.marketingCampaigns = new Map();
@@ -84,6 +95,30 @@ export class MemStorage implements IStorage {
     defaultServices.forEach(service => {
       const id = randomUUID();
       this.services.set(id, { ...service, id, createdAt: new Date() });
+    });
+
+    const defaultStaff: InsertStaff[] = [
+      { 
+        name: "益安", 
+        role: "設計師", 
+        specialty: "資深設計師（總監）", 
+        yearsOfExperience: 35,
+        photoUrl: null,
+        isActive: true 
+      },
+      { 
+        name: "巧宣", 
+        role: "設計師", 
+        specialty: "資深設計師", 
+        yearsOfExperience: 27,
+        photoUrl: null,
+        isActive: true 
+      },
+    ];
+
+    defaultStaff.forEach(member => {
+      const id = randomUUID();
+      this.staff.set(id, { ...member, id, createdAt: new Date() });
     });
   }
 
@@ -170,6 +205,47 @@ export class MemStorage implements IStorage {
 
   async deleteService(id: string): Promise<boolean> {
     return this.services.delete(id);
+  }
+
+  async getAllStaff(): Promise<Staff[]> {
+    return Array.from(this.staff.values()).sort((a, b) => 
+      b.createdAt.getTime() - a.createdAt.getTime()
+    );
+  }
+
+  async getActiveStaff(): Promise<Staff[]> {
+    return Array.from(this.staff.values())
+      .filter(s => s.isActive)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getStaffByRole(role: string): Promise<Staff[]> {
+    return Array.from(this.staff.values())
+      .filter(s => s.role === role && s.isActive)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getStaff(id: string): Promise<Staff | undefined> {
+    return this.staff.get(id);
+  }
+
+  async createStaff(insertStaff: InsertStaff): Promise<Staff> {
+    const id = randomUUID();
+    const member: Staff = { ...insertStaff, id, createdAt: new Date() };
+    this.staff.set(id, member);
+    return member;
+  }
+
+  async updateStaff(id: string, updates: Partial<InsertStaff>): Promise<Staff | undefined> {
+    const member = this.staff.get(id);
+    if (!member) return undefined;
+    const updated = { ...member, ...updates };
+    this.staff.set(id, updated);
+    return updated;
+  }
+
+  async deleteStaff(id: string): Promise<boolean> {
+    return this.staff.delete(id);
   }
 
   async getAllBookings(): Promise<Booking[]> {

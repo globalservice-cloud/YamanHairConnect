@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import type { Booking } from "@shared/schema";
+import type { Booking, Staff } from "@shared/schema";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, getDay } from "date-fns";
 import { zhTW } from "date-fns/locale";
 
@@ -18,24 +19,34 @@ export default function AdminCalendar() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editStatus, setEditStatus] = useState<string>("");
+  const [editStylistId, setEditStylistId] = useState<string>("");
+  const [editAssistantId, setEditAssistantId] = useState<string>("");
 
   const { data: bookings = [], isLoading } = useQuery<Booking[]>({
     queryKey: ["/api/bookings"],
   });
 
+  const { data: designers = [] } = useQuery<Staff[]>({
+    queryKey: ["/api/staff/role/設計師"],
+  });
+
+  const { data: assistants = [] } = useQuery<Staff[]>({
+    queryKey: ["/api/staff/role/助理"],
+  });
+
   const updateBookingMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
       const response = await fetch(`/api/bookings/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(updates),
       });
       if (!response.ok) throw new Error("Failed to update booking");
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
-      toast({ title: "預約狀態已更新" });
+      toast({ title: "預約已更新" });
       setIsEditDialogOpen(false);
       setSelectedBooking(null);
     },
@@ -64,12 +75,32 @@ export default function AdminCalendar() {
   const handleBookingClick = (booking: Booking) => {
     setSelectedBooking(booking);
     setEditStatus(booking.status);
+    setEditStylistId(booking.stylistId || "");
+    setEditAssistantId(booking.assistantId || "");
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateStatus = () => {
+  const handleUpdateBooking = () => {
     if (selectedBooking) {
-      updateBookingMutation.mutate({ id: selectedBooking.id, status: editStatus });
+      const selectedStylist = designers.find(d => d.id === editStylistId);
+      const selectedAssistant = assistants.find(a => a.id === editAssistantId);
+      
+      const updates: any = { status: editStatus };
+      
+      if (editStylistId) {
+        updates.stylistId = editStylistId;
+        updates.stylistName = selectedStylist?.name || "";
+      }
+      
+      if (editAssistantId) {
+        updates.assistantId = editAssistantId;
+        updates.assistantName = selectedAssistant?.name || "";
+      } else {
+        updates.assistantId = null;
+        updates.assistantName = null;
+      }
+      
+      updateBookingMutation.mutate({ id: selectedBooking.id, updates });
     }
   };
 
@@ -222,6 +253,12 @@ export default function AdminCalendar() {
                     </div>
                   </div>
                   <div>
+                    <div className="text-sm text-muted-foreground">助理</div>
+                    <div className="font-medium" data-testid="text-assistant-name">
+                      {selectedBooking.assistantName || "未指派"}
+                    </div>
+                  </div>
+                  <div>
                     <div className="text-sm text-muted-foreground">預約日期</div>
                     <div className="font-medium" data-testid="text-booking-date">
                       {selectedBooking.bookingDate}
@@ -254,7 +291,40 @@ export default function AdminCalendar() {
                 )}
 
                 <div>
-                  <div className="text-sm text-muted-foreground mb-2">預約狀態</div>
+                  <Label className="text-sm text-muted-foreground mb-2">指派設計師</Label>
+                  <Select value={editStylistId} onValueChange={setEditStylistId}>
+                    <SelectTrigger data-testid="select-stylist">
+                      <SelectValue placeholder="選擇設計師" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {designers.filter(d => d.isActive).map(designer => (
+                        <SelectItem key={designer.id} value={designer.id}>
+                          {designer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm text-muted-foreground mb-2">指派助理（選填）</Label>
+                  <Select value={editAssistantId} onValueChange={setEditAssistantId}>
+                    <SelectTrigger data-testid="select-assistant">
+                      <SelectValue placeholder="選擇助理（可不選）" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">不指派助理</SelectItem>
+                      {assistants.filter(a => a.isActive).map(assistant => (
+                        <SelectItem key={assistant.id} value={assistant.id}>
+                          {assistant.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm text-muted-foreground mb-2">預約狀態</Label>
                   <Select value={editStatus} onValueChange={setEditStatus}>
                     <SelectTrigger data-testid="select-booking-status">
                       <SelectValue />
@@ -269,7 +339,7 @@ export default function AdminCalendar() {
                 </div>
 
                 <div>
-                  <div className="text-sm text-muted-foreground">目前狀態</div>
+                  <Label className="text-sm text-muted-foreground">目前狀態</Label>
                   <Badge variant={getStatusBadgeVariant(selectedBooking.status)} data-testid="badge-current-status">
                     {getStatusText(selectedBooking.status)}
                   </Badge>
@@ -285,11 +355,11 @@ export default function AdminCalendar() {
                 取消
               </Button>
               <Button
-                onClick={handleUpdateStatus}
+                onClick={handleUpdateBooking}
                 disabled={updateBookingMutation.isPending}
-                data-testid="button-update-status"
+                data-testid="button-update-booking"
               >
-                {updateBookingMutation.isPending ? "更新中..." : "更新狀態"}
+                {updateBookingMutation.isPending ? "更新中..." : "更新預約"}
               </Button>
             </DialogFooter>
           </DialogContent>

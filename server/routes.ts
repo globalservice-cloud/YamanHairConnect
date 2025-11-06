@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import {
   insertCustomerSchema,
   insertServiceSchema,
+  insertStaffSchema,
   insertBookingSchema,
   insertPurchaseRecordSchema,
   insertMarketingCampaignSchema,
@@ -89,6 +90,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/services/:id", async (req, res) => {
     const success = await storage.deleteService(req.params.id);
     if (!success) return res.status(404).json({ error: "Service not found" });
+    res.json({ success: true });
+  });
+
+  // Staff
+  app.get("/api/staff", async (_req, res) => {
+    const staff = await storage.getAllStaff();
+    res.json(staff);
+  });
+
+  app.get("/api/staff/active", async (_req, res) => {
+    const staff = await storage.getActiveStaff();
+    res.json(staff);
+  });
+
+  app.get("/api/staff/role/:role", async (req, res) => {
+    const staff = await storage.getStaffByRole(req.params.role);
+    res.json(staff);
+  });
+
+  app.get("/api/staff/:id", async (req, res) => {
+    const member = await storage.getStaff(req.params.id);
+    if (!member) return res.status(404).json({ error: "Staff member not found" });
+    res.json(member);
+  });
+
+  app.post("/api/staff", async (req, res) => {
+    try {
+      const data = insertStaffSchema.parse(req.body);
+      const member = await storage.createStaff(data);
+      res.json(member);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/staff/:id", async (req, res) => {
+    try {
+      const member = await storage.updateStaff(req.params.id, req.body);
+      if (!member) return res.status(404).json({ error: "Staff member not found" });
+      res.json(member);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/staff/:id", async (req, res) => {
+    const success = await storage.deleteStaff(req.params.id);
+    if (!success) return res.status(404).json({ error: "Staff member not found" });
     res.json({ success: true });
   });
 

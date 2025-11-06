@@ -6,11 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
-import { Scissors, Palette, Waves, Sparkles, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { Scissors, Palette, Waves, Sparkles, ChevronRight, ChevronLeft, Check, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Service } from "@shared/schema";
-import qiaoxuanImage from '@assets/IMG_3664_1762413101449.jpeg';
-import yianImage from '@assets/IMG_3667_1762413450872.jpeg';
+import type { Service, Staff } from "@shared/schema";
 
 const getServiceIcon = (serviceName: string) => {
   if (serviceName.includes("洗")) return Sparkles;
@@ -35,10 +33,18 @@ export default function Booking() {
     queryKey: ["/api/services/active"],
   });
 
+  const { data: allStaff = [], isLoading: staffLoading } = useQuery<Staff[]>({
+    queryKey: ["/api/staff/role/設計師"],
+  });
+
   const stylists = [
-    { id: "none", name: "無指定", image: "" },
-    { id: "yian", name: "益安", specialty: "資深設計師（總監）・35年經驗", image: yianImage },
-    { id: "qiaoxuan", name: "巧宣", specialty: "資深設計師・27年經驗", image: qiaoxuanImage },
+    { id: "none", name: "無指定", specialty: "", photoUrl: null },
+    ...allStaff.filter(s => s.isActive).map(s => ({
+      id: s.id,
+      name: s.name,
+      specialty: s.specialty ? `${s.specialty}${s.yearsOfExperience ? `・${s.yearsOfExperience}年經驗` : ''}` : '',
+      photoUrl: s.photoUrl,
+    })),
   ];
 
   const timeSlots = [
@@ -86,7 +92,10 @@ export default function Booking() {
           customerLineId: customerLine || null,
           serviceId: selectedService,
           serviceName: service?.name || "",
+          stylistId: selectedStylist === "none" ? null : selectedStylist,
           stylistName: stylist?.name || "",
+          assistantId: null,
+          assistantName: null,
           bookingDate: selectedDate?.toISOString().split('T')[0] || "",
           bookingTime: selectedTime,
           status: "pending",
@@ -204,30 +213,34 @@ export default function Booking() {
 
             {step === 2 && (
               <RadioGroup value={selectedStylist} onValueChange={setSelectedStylist}>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {stylists.map((stylist) => (
-                    <Label
-                      key={stylist.id}
-                      htmlFor={stylist.id}
-                      className={`flex flex-col items-center p-4 border rounded-xl cursor-pointer hover-elevate ${
-                        selectedStylist === stylist.id ? "border-primary bg-primary/5" : ""
-                      }`}
-                    >
-                      <RadioGroupItem value={stylist.id} id={stylist.id} className="mb-2" data-testid={`radio-stylist-${stylist.id}`} />
-                      {stylist.image ? (
-                        <img src={stylist.image} alt={stylist.name} className="w-20 h-20 rounded-full object-cover mb-2" />
-                      ) : (
-                        <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-2">
-                          <Scissors className="w-8 h-8 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="font-semibold text-center">{stylist.name}</div>
-                      {stylist.specialty && (
-                        <div className="text-xs text-muted-foreground text-center">{stylist.specialty}</div>
-                      )}
-                    </Label>
-                  ))}
-                </div>
+                {staffLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">載入中...</div>
+                ) : (
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {stylists.map((stylist) => (
+                      <Label
+                        key={stylist.id}
+                        htmlFor={stylist.id}
+                        className={`flex flex-col items-center p-4 border rounded-xl cursor-pointer hover-elevate ${
+                          selectedStylist === stylist.id ? "border-primary bg-primary/5" : ""
+                        }`}
+                      >
+                        <RadioGroupItem value={stylist.id} id={stylist.id} className="mb-2" data-testid={`radio-stylist-${stylist.id}`} />
+                        {stylist.photoUrl ? (
+                          <img src={stylist.photoUrl} alt={stylist.name} className="w-20 h-20 rounded-full object-cover mb-2" />
+                        ) : (
+                          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-2">
+                            <User className="w-8 h-8 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="font-semibold text-center">{stylist.name}</div>
+                        {stylist.specialty && (
+                          <div className="text-xs text-muted-foreground text-center">{stylist.specialty}</div>
+                        )}
+                      </Label>
+                    ))}
+                  </div>
+                )}
               </RadioGroup>
             )}
 

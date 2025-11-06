@@ -29,6 +29,17 @@ export const services = pgTable("services", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const staff = pgTable("staff", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  role: text("role").notNull(),
+  specialty: text("specialty"),
+  yearsOfExperience: integer("years_of_experience"),
+  photoUrl: text("photo_url"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const bookings = pgTable("bookings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerId: varchar("customer_id").references(() => customers.id),
@@ -37,7 +48,10 @@ export const bookings = pgTable("bookings", {
   customerLineId: text("customer_line_id"),
   serviceId: varchar("service_id").references(() => services.id),
   serviceName: text("service_name").notNull(),
+  stylistId: varchar("stylist_id").references(() => staff.id),
   stylistName: text("stylist_name").notNull(),
+  assistantId: varchar("assistant_id").references(() => staff.id),
+  assistantName: text("assistant_name"),
   bookingDate: text("booking_date").notNull(),
   bookingTime: text("booking_time").notNull(),
   status: text("status").notNull().default("pending"),
@@ -81,6 +95,7 @@ export const seoSettings = pgTable("seo_settings", {
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true });
 export const insertServiceSchema = createInsertSchema(services).omit({ id: true, createdAt: true });
+export const insertStaffSchema = createInsertSchema(staff).omit({ id: true, createdAt: true });
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true, createdAt: true });
 export const insertPurchaseRecordSchema = createInsertSchema(purchaseRecords).omit({ id: true, purchaseDate: true });
 export const insertMarketingCampaignSchema = createInsertSchema(marketingCampaigns).omit({ id: true, createdAt: true });
@@ -92,6 +107,8 @@ export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 export type Customer = typeof customers.$inferSelect;
 export type InsertService = z.infer<typeof insertServiceSchema>;
 export type Service = typeof services.$inferSelect;
+export type InsertStaff = z.infer<typeof insertStaffSchema>;
+export type Staff = typeof staff.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
 export type Booking = typeof bookings.$inferSelect;
 export type InsertPurchaseRecord = z.infer<typeof insertPurchaseRecordSchema>;
