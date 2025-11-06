@@ -1,0 +1,123 @@
+# Yaman Hair Salon Website
+
+## Overview
+
+A full-stack web application for 雅曼美髮沙龍 (Yaman Hair Salon), a family-run hair salon in New Taipei City, Taiwan. The application provides a warm, welcoming online presence with booking management, customer relationship management, and administrative tools. Built with a modern React frontend and Express backend, the system enables customers to browse services, meet the team, and make appointments while giving salon staff comprehensive tools to manage bookings, customers, services, and marketing campaigns.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+
+**Framework**: React 18 with TypeScript running in a Vite development environment
+
+**Routing**: Wouter for client-side routing with paths for:
+- Public pages: Home, Services, Team, Booking, Contact
+- Admin pages: Login, Dashboard, Calendar, Customers, Services, Staff, Marketing, SEO
+
+**UI Component Library**: Shadcn/ui with Radix UI primitives providing:
+- Consistent design system based on "new-york" style
+- Tailwind CSS for styling with custom color tokens
+- Typography system using Noto Serif TC (headings), Noto Sans TC (body), and Inter (UI elements)
+- Neutral base color scheme with warm, hospitality-focused aesthetics
+
+**State Management**: 
+- TanStack Query (React Query) for server state with custom query client configuration
+- Query functions configured to throw on 401 errors by default
+- Infinite stale time and disabled refetching for better control
+
+**Form Handling**: React Hook Form with Zod validation via @hookform/resolvers
+
+**Design Philosophy**: Airbnb-inspired warm hospitality combined with beauty industry polish, creating a family-like atmosphere while maintaining professional credibility
+
+### Backend Architecture
+
+**Framework**: Express.js server with TypeScript
+
+**API Design**: RESTful API endpoints organized by resource:
+- `/api/customers` - Customer CRUD operations
+- `/api/services` - Service management
+- `/api/staff` - Staff/stylist management  
+- `/api/bookings` - Appointment booking system
+- `/api/purchase-records` - Customer purchase history
+- `/api/marketing-campaigns` - Marketing campaign management
+- `/api/seo-settings` - SEO configuration per page
+
+**Development Server**: Vite middleware integration for hot module replacement during development
+
+**Request Logging**: Custom middleware capturing request method, path, status, duration, and truncated JSON responses for API calls
+
+**Static File Serving**: Production builds serve from `dist/public` directory
+
+### Data Layer
+
+**ORM**: Drizzle ORM configured for PostgreSQL with:
+- Schema definitions in `shared/schema.ts` for type safety across frontend/backend
+- Migration files output to `./migrations` directory
+- Zod schema generation via drizzle-zod for runtime validation
+
+**Database Schema**:
+- `users` - Admin authentication
+- `customers` - Customer profiles with contact info (phone, LINE ID, email)
+- `services` - Service catalog with pricing and active status
+- `staff` - Team member profiles with roles, specialties, experience
+- `bookings` - Appointments linking customers, services, and staff with status tracking
+- `purchase_records` - Transaction history for customer relationship management
+- `marketing_campaigns` - Promotional campaigns with discount configuration
+- `seo_settings` - Page-specific SEO metadata
+
+**Storage Abstraction**: `IStorage` interface defining all data operations, allowing for different implementations (in-memory for development, database for production)
+
+### Build and Deployment
+
+**Build Process**: 
+- Frontend: Vite builds React app to `dist/public`
+- Backend: esbuild bundles Express server to `dist/index.js` as ESM with external packages
+
+**Development**: NODE_ENV=development with tsx for TypeScript execution
+
+**Production**: NODE_ENV=production running bundled JavaScript
+
+**Path Aliases**: 
+- `@/*` → `client/src/*`
+- `@shared/*` → `shared/*`
+- `@assets/*` → `attached_assets/*`
+
+## External Dependencies
+
+### Database
+- **Neon Database** (@neondatabase/serverless) - Serverless PostgreSQL hosting
+- **PostgreSQL** - Primary database via Drizzle dialect configuration
+
+### UI Components
+- **Radix UI** - Headless component primitives (20+ components including dialogs, dropdowns, calendars)
+- **Shadcn/ui** - Pre-styled component configurations built on Radix
+- **Lucide React** - Icon library
+- **React Icons** - Additional icons (specifically SiLine for LINE messenger integration)
+
+### Form and Validation
+- **Zod** - Schema validation library
+- **React Hook Form** - Form state management
+- **Drizzle-Zod** - Automatic Zod schema generation from Drizzle schemas
+
+### Date Handling
+- **date-fns** - Date manipulation and formatting with zh-TW locale support
+
+### Styling
+- **Tailwind CSS** - Utility-first CSS framework
+- **class-variance-authority** - Type-safe variant styling
+- **tailwind-merge** - Intelligent class merging
+
+### Developer Experience
+- **Vite** - Build tool and dev server
+- **TypeScript** - Type safety
+- **esbuild** - Production bundling
+- **tsx** - TypeScript execution for development
+
+### Third-Party Services
+- **LINE Messenger** - Customer communication channel (@377bechg)
+- **Google Maps** - Location services for salon address (新北市中和區民德路52號1樓)
+- **Google Fonts** - Typography (Inter, Noto Sans TC, Noto Serif TC)

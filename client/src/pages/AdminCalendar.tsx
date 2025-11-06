@@ -76,7 +76,7 @@ export default function AdminCalendar() {
     setSelectedBooking(booking);
     setEditStatus(booking.status);
     setEditStylistId(booking.stylistId || "");
-    setEditAssistantId(booking.assistantId || "");
+    setEditAssistantId(booking.assistantId || "__none__");
     setIsEditDialogOpen(true);
   };
 
@@ -92,7 +92,7 @@ export default function AdminCalendar() {
         updates.stylistName = selectedStylist?.name || "";
       }
       
-      if (editAssistantId) {
+      if (editAssistantId && editAssistantId !== "__none__") {
         updates.assistantId = editAssistantId;
         updates.assistantName = selectedAssistant?.name || "";
       } else {
@@ -313,7 +313,7 @@ export default function AdminCalendar() {
                       <SelectValue placeholder="選擇助理（可不選）" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">不指派助理</SelectItem>
+                      <SelectItem value="__none__">不指派助理</SelectItem>
                       {assistants.filter(a => a.isActive).map(assistant => (
                         <SelectItem key={assistant.id} value={assistant.id}>
                           {assistant.name}
