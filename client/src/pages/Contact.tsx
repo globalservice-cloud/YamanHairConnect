@@ -99,12 +99,22 @@ export default function Contact() {
                   </ul>
                 </div>
 
-                <div className="bg-muted/50 p-4 rounded-xl">
-                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                    <MapPin className="w-12 h-12 text-muted-foreground" />
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=新北市中和區民德路52號1樓"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-muted/50 p-4 rounded-xl hover-elevate transition-all"
+                  data-testid="link-google-map"
+                >
+                  <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex flex-col items-center justify-center gap-3 border-2 border-dashed border-primary/30">
+                    <MapPin className="w-12 h-12 text-primary" />
+                    <div className="text-center">
+                      <p className="font-semibold text-primary">點擊開啟Google地圖</p>
+                      <p className="text-xs text-muted-foreground mt-1">新北市中和區民德路52號1樓</p>
+                    </div>
                   </div>
-                  <p className="text-sm text-center text-muted-foreground mt-2">地圖位置</p>
-                </div>
+                  <p className="text-sm text-center text-primary font-medium mt-3">📍 在地圖上查看位置與路線</p>
+                </a>
               </div>
             </CardContent>
           </Card>
