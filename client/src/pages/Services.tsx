@@ -1,10 +1,10 @@
 import ServiceCard from "@/components/ServiceCard";
-import { Scissors, Palette, Waves, Sparkles, Wind, Droplets } from "lucide-react";
-import salonInterior1 from '@assets/IMG_3678_1762413758256.jpeg';
-import salonInterior2 from '@assets/IMG_3679_1762413758256.jpeg';
-import workingImage from '@assets/IMG_3675_1762413758256.jpeg';
-import workingImage2 from '@assets/IMG_3676_1762413758256.jpeg';
-import workingImage3 from '@assets/IMG_3677_1762413758256.jpeg';
+import { Scissors, Palette, Waves, Sparkles, Droplets } from "lucide-react";
+import washingImage from '@assets/stock_images/warm_friendly_hairdr_d03df2ef.jpg';
+import cuttingImage from '@assets/stock_images/professional_hairsty_3e89cc75.jpg';
+import coloringImage from '@assets/stock_images/hair_coloring_dyeing_914ade7b.jpg';
+import permingImage from '@assets/stock_images/hair_perming_styling_ff79ea54.jpg';
+import treatmentImage from '@assets/stock_images/hair_treatment_condi_8ab38a9b.jpg';
 
 export default function Services() {
   const services = [
@@ -12,35 +12,35 @@ export default function Services() {
       title: "洗髮",
       description: "舒適的洗髮體驗，使用優質洗髮產品，為您的秀髮提供基礎清潔與保養。",
       price: "NT$ 250",
-      image: salonInterior1,
+      image: washingImage,
       icon: Droplets,
     },
     {
       title: "專業剪髮",
       description: "根據您的臉型、氣質與生活方式，設計專屬於您的完美髮型。我們的設計師會細心傾聽您的需求，提供專業建議。",
       price: "NT$ 400",
-      image: workingImage2,
+      image: cuttingImage,
       icon: Scissors,
     },
     {
       title: "時尚染髮",
       description: "使用頂級染劑，為您呈現完美髮色。從自然色系到時尚潮流色，都能展現您的獨特魅力。",
       price: "NT$ 2,000 起",
-      image: workingImage3,
+      image: coloringImage,
       icon: Palette,
     },
     {
       title: "質感燙髮",
       description: "打造自然捲度與蓬鬆感，讓頭髮充滿生命力。使用溫和藥水，降低對髮質的傷害。",
       price: "NT$ 2,000 起",
-      image: workingImage,
+      image: permingImage,
       icon: Waves,
     },
     {
       title: "深層護髮",
       description: "針對受損髮質提供深層修護，補充養分與水分，讓秀髮恢復健康光澤。",
       price: "NT$ 800 起",
-      image: salonInterior2,
+      image: treatmentImage,
       icon: Sparkles,
     },
   ];
