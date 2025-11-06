@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Scissors, Palette, Waves, Sparkles, Heart, Star, Phone, MapPin } from "lucide-react";
 import { SiLine } from "react-icons/si";
-import teamPhoto from "@assets/HEIF影像_1762424685823.jpeg";
+import teamPhoto from "@assets/IMG_3687_1762425091046.jpeg";
 
 export default function Home() {
   const services = [
