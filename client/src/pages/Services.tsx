@@ -1,8 +1,10 @@
 import ServiceCard from "@/components/ServiceCard";
 import { Scissors, Palette, Waves, Sparkles, Wind, Droplets } from "lucide-react";
-import cuttingImage from '@assets/generated_images/Hair_cutting_service_ac14a7f9.png';
-import coloringImage from '@assets/generated_images/Hair_coloring_service_8a98426c.png';
-import treatmentImage from '@assets/generated_images/Hair_treatment_service_44b1f4a0.png';
+import salonInterior1 from '@assets/IMG_3678_1762413758256.jpeg';
+import salonInterior2 from '@assets/IMG_3679_1762413758256.jpeg';
+import workingImage from '@assets/IMG_3675_1762413758256.jpeg';
+import workingImage2 from '@assets/IMG_3676_1762413758256.jpeg';
+import workingImage3 from '@assets/IMG_3677_1762413758256.jpeg';
 
 export default function Services() {
   const services = [
@@ -10,35 +12,35 @@ export default function Services() {
       title: "洗髮",
       description: "舒適的洗髮體驗，使用優質洗髮產品，為您的秀髮提供基礎清潔與保養。",
       price: "NT$ 250",
-      image: treatmentImage,
+      image: salonInterior1,
       icon: Droplets,
     },
     {
       title: "專業剪髮",
       description: "根據您的臉型、氣質與生活方式，設計專屬於您的完美髮型。我們的設計師會細心傾聽您的需求，提供專業建議。",
       price: "NT$ 400",
-      image: cuttingImage,
+      image: workingImage2,
       icon: Scissors,
     },
     {
       title: "時尚染髮",
       description: "使用頂級染劑，為您呈現完美髮色。從自然色系到時尚潮流色，都能展現您的獨特魅力。",
       price: "NT$ 2,000 起",
-      image: coloringImage,
+      image: workingImage3,
       icon: Palette,
     },
     {
       title: "質感燙髮",
       description: "打造自然捲度與蓬鬆感，讓頭髮充滿生命力。使用溫和藥水，降低對髮質的傷害。",
       price: "NT$ 2,000 起",
-      image: treatmentImage,
+      image: workingImage,
       icon: Waves,
     },
     {
       title: "深層護髮",
       description: "針對受損髮質提供深層修護，補充養分與水分，讓秀髮恢復健康光澤。",
       price: "NT$ 800 起",
-      image: treatmentImage,
+      image: salonInterior2,
       icon: Sparkles,
     },
   ];

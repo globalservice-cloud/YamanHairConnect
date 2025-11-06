@@ -4,10 +4,10 @@ import { Scissors, Palette, Waves, Sparkles, Heart, Star } from "lucide-react";
 import { SiLine } from "react-icons/si";
 import ServiceCard from "@/components/ServiceCard";
 import StylistCard from "@/components/StylistCard";
-import heroImage from '@assets/generated_images/Cozy_salon_interior_hero_34f24d2c.png';
-import cuttingImage from '@assets/generated_images/Hair_cutting_service_ac14a7f9.png';
-import coloringImage from '@assets/generated_images/Hair_coloring_service_8a98426c.png';
-import treatmentImage from '@assets/generated_images/Hair_treatment_service_44b1f4a0.png';
+import heroImage from '@assets/IMG_3658_1762413566765.jpeg';
+import salonInterior1 from '@assets/IMG_3678_1762413758256.jpeg';
+import salonInterior2 from '@assets/IMG_3679_1762413758256.jpeg';
+import workingImage from '@assets/IMG_3675_1762413758256.jpeg';
 import qiaoxuanImage from '@assets/IMG_3664_1762413101449.jpeg';
 import yianImage from '@assets/IMG_3667_1762413450872.jpeg';
 
@@ -17,21 +17,21 @@ export default function Home() {
       title: "專業剪髮",
       description: "根據您的臉型與個性，打造專屬於您的髮型",
       price: "NT$ 400",
-      image: cuttingImage,
+      image: workingImage,
       icon: Scissors,
     },
     {
       title: "時尚染髮",
       description: "使用頂級染劑，為您呈現完美髮色",
       price: "NT$ 2,000 起",
-      image: coloringImage,
+      image: salonInterior1,
       icon: Palette,
     },
     {
       title: "質感燙髮",
       description: "自然捲度與蓬鬆感，展現迷人魅力",
       price: "NT$ 2,000 起",
-      image: treatmentImage,
+      image: salonInterior2,
       icon: Waves,
     },
   ];
