@@ -22,9 +22,10 @@ export default function Booking() {
   const { toast } = useToast();
 
   const services = [
-    { id: "haircut", name: "專業剪髮", price: "NT$ 800 起", icon: Scissors },
+    { id: "wash", name: "洗髮", price: "NT$ 250", icon: Sparkles },
+    { id: "haircut", name: "專業剪髮", price: "NT$ 400", icon: Scissors },
     { id: "coloring", name: "時尚染髮", price: "NT$ 2,000 起", icon: Palette },
-    { id: "perm", name: "質感燙髮", price: "NT$ 2,500 起", icon: Waves },
+    { id: "perm", name: "質感燙髮", price: "NT$ 2,000 起", icon: Waves },
     { id: "treatment", name: "深層護髮", price: "NT$ 800 起", icon: Sparkles },
   ];
 

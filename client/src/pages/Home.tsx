@@ -16,7 +16,7 @@ export default function Home() {
     {
       title: "專業剪髮",
       description: "根據您的臉型與個性，打造專屬於您的髮型",
-      price: "NT$ 800 起",
+      price: "NT$ 400",
       image: cuttingImage,
       icon: Scissors,
     },
@@ -30,7 +30,7 @@ export default function Home() {
     {
       title: "質感燙髮",
       description: "自然捲度與蓬鬆感，展現迷人魅力",
-      price: "NT$ 2,500 起",
+      price: "NT$ 2,000 起",
       image: treatmentImage,
       icon: Waves,
     },

@@ -7,9 +7,16 @@ import treatmentImage from '@assets/generated_images/Hair_treatment_service_44b1
 export default function Services() {
   const services = [
     {
+      title: "洗髮",
+      description: "舒適的洗髮體驗，使用優質洗髮產品，為您的秀髮提供基礎清潔與保養。",
+      price: "NT$ 250",
+      image: treatmentImage,
+      icon: Droplets,
+    },
+    {
       title: "專業剪髮",
       description: "根據您的臉型、氣質與生活方式，設計專屬於您的完美髮型。我們的設計師會細心傾聽您的需求，提供專業建議。",
-      price: "NT$ 800 起",
+      price: "NT$ 400",
       image: cuttingImage,
       icon: Scissors,
     },
@@ -23,7 +30,7 @@ export default function Services() {
     {
       title: "質感燙髮",
       description: "打造自然捲度與蓬鬆感，讓頭髮充滿生命力。使用溫和藥水，降低對髮質的傷害。",
-      price: "NT$ 2,500 起",
+      price: "NT$ 2,000 起",
       image: treatmentImage,
       icon: Waves,
     },
@@ -33,20 +40,6 @@ export default function Services() {
       price: "NT$ 800 起",
       image: treatmentImage,
       icon: Sparkles,
-    },
-    {
-      title: "造型設計",
-      description: "特殊場合造型設計，婚禮、派對或重要約會，讓您成為全場焦點。",
-      price: "NT$ 1,200 起",
-      image: cuttingImage,
-      icon: Wind,
-    },
-    {
-      title: "頭皮護理",
-      description: "深層清潔頭皮，促進血液循環，改善頭皮健康，為秀髮打好基礎。",
-      price: "NT$ 600 起",
-      image: coloringImage,
-      icon: Droplets,
     },
   ];
 
