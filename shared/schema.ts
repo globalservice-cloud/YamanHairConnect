@@ -99,6 +99,26 @@ export const seoSettings = pgTable("seo_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const businessHours = pgTable("business_hours", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  dayOfWeek: integer("day_of_week").notNull(),
+  openTime: text("open_time"),
+  closeTime: text("close_time"),
+  isClosed: boolean("is_closed").default(false).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const announcements = pgTable("announcements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  type: text("type").notNull().default("info"),
+  isActive: boolean("is_active").default(true).notNull(),
+  startDate: text("start_date"),
+  endDate: text("end_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true });
 export const insertServiceSchema = createInsertSchema(services).omit({ id: true, createdAt: true });
@@ -107,6 +127,8 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true,
 export const insertPurchaseRecordSchema = createInsertSchema(purchaseRecords).omit({ id: true, purchaseDate: true });
 export const insertMarketingCampaignSchema = createInsertSchema(marketingCampaigns).omit({ id: true, createdAt: true });
 export const insertSeoSettingSchema = createInsertSchema(seoSettings).omit({ id: true, updatedAt: true });
+export const insertBusinessHourSchema = createInsertSchema(businessHours).omit({ id: true, updatedAt: true });
+export const insertAnnouncementSchema = createInsertSchema(announcements).omit({ id: true, createdAt: true });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -124,3 +146,7 @@ export type InsertMarketingCampaign = z.infer<typeof insertMarketingCampaignSche
 export type MarketingCampaign = typeof marketingCampaigns.$inferSelect;
 export type InsertSeoSetting = z.infer<typeof insertSeoSettingSchema>;
 export type SeoSetting = typeof seoSettings.$inferSelect;
+export type InsertBusinessHour = z.infer<typeof insertBusinessHourSchema>;
+export type BusinessHour = typeof businessHours.$inferSelect;
+export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
+export type Announcement = typeof announcements.$inferSelect;
