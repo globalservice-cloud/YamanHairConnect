@@ -7,7 +7,9 @@ import {
   type PurchaseRecord, type InsertPurchaseRecord,
   type MarketingCampaign, type InsertMarketingCampaign,
   type SeoSetting, type InsertSeoSetting,
-  users, customers, services, staff, bookings, purchaseRecords, marketingCampaigns, seoSettings
+  type BusinessHour, type InsertBusinessHour,
+  type Announcement, type InsertAnnouncement,
+  users, customers, services, staff, bookings, purchaseRecords, marketingCampaigns, seoSettings, businessHours, announcements
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { neon } from "@neondatabase/serverless";
@@ -63,6 +65,17 @@ export interface IStorage {
   getAllSeoSettings(): Promise<SeoSetting[]>;
   getSeoSettingByPage(page: string): Promise<SeoSetting | undefined>;
   createOrUpdateSeoSetting(setting: InsertSeoSetting): Promise<SeoSetting>;
+  
+  getAllBusinessHours(): Promise<BusinessHour[]>;
+  getBusinessHourByDay(dayOfWeek: number): Promise<BusinessHour | undefined>;
+  createOrUpdateBusinessHour(hour: InsertBusinessHour): Promise<BusinessHour>;
+  
+  getAllAnnouncements(): Promise<Announcement[]>;
+  getActiveAnnouncements(): Promise<Announcement[]>;
+  getAnnouncement(id: string): Promise<Announcement | undefined>;
+  createAnnouncement(announcement: InsertAnnouncement): Promise<Announcement>;
+  updateAnnouncement(id: string, announcement: Partial<InsertAnnouncement>): Promise<Announcement | undefined>;
+  deleteAnnouncement(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -74,6 +87,8 @@ export class MemStorage implements IStorage {
   private purchaseRecords: Map<string, PurchaseRecord>;
   private marketingCampaigns: Map<string, MarketingCampaign>;
   private seoSettings: Map<string, SeoSetting>;
+  private businessHours: Map<string, BusinessHour>;
+  private announcements: Map<string, Announcement>;
 
   constructor() {
     this.users = new Map();
@@ -84,6 +99,8 @@ export class MemStorage implements IStorage {
     this.purchaseRecords = new Map();
     this.marketingCampaigns = new Map();
     this.seoSettings = new Map();
+    this.businessHours = new Map();
+    this.announcements = new Map();
     
     this.initializeDefaultData();
   }
@@ -135,6 +152,21 @@ export class MemStorage implements IStorage {
     defaultStaff.forEach(member => {
       const id = randomUUID();
       this.staff.set(id, { ...member, id, createdAt: new Date() });
+    });
+
+    const defaultBusinessHours: InsertBusinessHour[] = [
+      { dayOfWeek: 0, openTime: null, closeTime: null, isClosed: true },
+      { dayOfWeek: 1, openTime: "11:00", closeTime: "20:00", isClosed: false },
+      { dayOfWeek: 2, openTime: "11:00", closeTime: "20:00", isClosed: false },
+      { dayOfWeek: 3, openTime: "11:00", closeTime: "20:00", isClosed: false },
+      { dayOfWeek: 4, openTime: "11:00", closeTime: "20:00", isClosed: false },
+      { dayOfWeek: 5, openTime: "11:00", closeTime: "20:00", isClosed: false },
+      { dayOfWeek: 6, openTime: "11:00", closeTime: "20:00", isClosed: false },
+    ];
+
+    defaultBusinessHours.forEach(hour => {
+      const id = randomUUID();
+      this.businessHours.set(id, { ...hour, id, updatedAt: new Date() });
     });
   }
 
@@ -381,6 +413,62 @@ export class MemStorage implements IStorage {
     this.seoSettings.set(id, setting);
     return setting;
   }
+
+  async getAllBusinessHours(): Promise<BusinessHour[]> {
+    return Array.from(this.businessHours.values()).sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+  }
+
+  async getBusinessHourByDay(dayOfWeek: number): Promise<BusinessHour | undefined> {
+    return Array.from(this.businessHours.values()).find(h => h.dayOfWeek === dayOfWeek);
+  }
+
+  async createOrUpdateBusinessHour(insertHour: InsertBusinessHour): Promise<BusinessHour> {
+    const existing = await this.getBusinessHourByDay(insertHour.dayOfWeek);
+    if (existing) {
+      const updated = { ...existing, ...insertHour, updatedAt: new Date() };
+      this.businessHours.set(existing.id, updated);
+      return updated;
+    }
+    const id = randomUUID();
+    const hour: BusinessHour = { ...insertHour, id, updatedAt: new Date() };
+    this.businessHours.set(id, hour);
+    return hour;
+  }
+
+  async getAllAnnouncements(): Promise<Announcement[]> {
+    return Array.from(this.announcements.values()).sort((a, b) => 
+      b.createdAt.getTime() - a.createdAt.getTime()
+    );
+  }
+
+  async getActiveAnnouncements(): Promise<Announcement[]> {
+    return Array.from(this.announcements.values())
+      .filter(a => a.isActive)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getAnnouncement(id: string): Promise<Announcement | undefined> {
+    return this.announcements.get(id);
+  }
+
+  async createAnnouncement(insertAnnouncement: InsertAnnouncement): Promise<Announcement> {
+    const id = randomUUID();
+    const announcement: Announcement = { ...insertAnnouncement, id, createdAt: new Date() };
+    this.announcements.set(id, announcement);
+    return announcement;
+  }
+
+  async updateAnnouncement(id: string, updates: Partial<InsertAnnouncement>): Promise<Announcement | undefined> {
+    const announcement = this.announcements.get(id);
+    if (!announcement) return undefined;
+    const updated = { ...announcement, ...updates };
+    this.announcements.set(id, updated);
+    return updated;
+  }
+
+  async deleteAnnouncement(id: string): Promise<boolean> {
+    return this.announcements.delete(id);
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -441,6 +529,22 @@ export class DbStorage implements IStorage {
       ];
       for (const member of defaultStaff) {
         await this.createStaff(member);
+      }
+    }
+
+    const existingBusinessHours = await this.getAllBusinessHours();
+    if (existingBusinessHours.length === 0) {
+      const defaultBusinessHours: InsertBusinessHour[] = [
+        { dayOfWeek: 0, openTime: null, closeTime: null, isClosed: true },
+        { dayOfWeek: 1, openTime: "11:00", closeTime: "20:00", isClosed: false },
+        { dayOfWeek: 2, openTime: "11:00", closeTime: "20:00", isClosed: false },
+        { dayOfWeek: 3, openTime: "11:00", closeTime: "20:00", isClosed: false },
+        { dayOfWeek: 4, openTime: "11:00", closeTime: "20:00", isClosed: false },
+        { dayOfWeek: 5, openTime: "11:00", closeTime: "20:00", isClosed: false },
+        { dayOfWeek: 6, openTime: "11:00", closeTime: "20:00", isClosed: false },
+      ];
+      for (const hour of defaultBusinessHours) {
+        await this.createOrUpdateBusinessHour(hour);
       }
     }
   }
@@ -640,6 +744,53 @@ export class DbStorage implements IStorage {
     }
     const result = await this.db.insert(seoSettings).values(insertSetting).returning();
     return result[0];
+  }
+
+  async getAllBusinessHours(): Promise<BusinessHour[]> {
+    return this.db.select().from(businessHours).orderBy(businessHours.dayOfWeek);
+  }
+
+  async getBusinessHourByDay(dayOfWeek: number): Promise<BusinessHour | undefined> {
+    const result = await this.db.select().from(businessHours).where(eq(businessHours.dayOfWeek, dayOfWeek)).limit(1);
+    return result[0];
+  }
+
+  async createOrUpdateBusinessHour(insertHour: InsertBusinessHour): Promise<BusinessHour> {
+    const existing = await this.getBusinessHourByDay(insertHour.dayOfWeek);
+    if (existing) {
+      const result = await this.db.update(businessHours).set({ ...insertHour, updatedAt: new Date() }).where(eq(businessHours.id, existing.id)).returning();
+      return result[0];
+    }
+    const result = await this.db.insert(businessHours).values(insertHour).returning();
+    return result[0];
+  }
+
+  async getAllAnnouncements(): Promise<Announcement[]> {
+    return this.db.select().from(announcements).orderBy(desc(announcements.createdAt));
+  }
+
+  async getActiveAnnouncements(): Promise<Announcement[]> {
+    return this.db.select().from(announcements).where(eq(announcements.isActive, true)).orderBy(desc(announcements.createdAt));
+  }
+
+  async getAnnouncement(id: string): Promise<Announcement | undefined> {
+    const result = await this.db.select().from(announcements).where(eq(announcements.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createAnnouncement(insertAnnouncement: InsertAnnouncement): Promise<Announcement> {
+    const result = await this.db.insert(announcements).values(insertAnnouncement).returning();
+    return result[0];
+  }
+
+  async updateAnnouncement(id: string, updates: Partial<InsertAnnouncement>): Promise<Announcement | undefined> {
+    const result = await this.db.update(announcements).set(updates).where(eq(announcements.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteAnnouncement(id: string): Promise<boolean> {
+    const result = await this.db.delete(announcements).where(eq(announcements.id, id)).returning();
+    return result.length > 0;
   }
 }
 
