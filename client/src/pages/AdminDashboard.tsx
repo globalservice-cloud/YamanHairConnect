@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Scissors, TrendingUp, Search, LogOut, CalendarDays, Lock } from "lucide-react";
+import { Calendar, Users, Scissors, TrendingUp, Search, LogOut, CalendarDays, Lock, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Booking } from "@shared/schema";
 
@@ -73,6 +73,14 @@ export default function AdminDashboard() {
       path: "/admin/seo",
       color: "text-pink-600",
       testId: "nav-seo"
+    },
+    {
+      title: "營業時間與公告",
+      description: "管理營業時間和對外公告",
+      icon: Clock,
+      path: "/admin/business-settings",
+      color: "text-teal-600",
+      testId: "nav-business-settings"
     },
   ];
 
