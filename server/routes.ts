@@ -11,7 +11,9 @@ import {
   insertBookingSchema,
   insertPurchaseRecordSchema,
   insertMarketingCampaignSchema,
-  insertSeoSettingSchema
+  insertSeoSettingSchema,
+  insertBusinessHourSchema,
+  insertAnnouncementSchema
 } from "@shared/schema";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -365,6 +367,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
+  });
+
+  // Business Hours
+  app.get("/api/business-hours", async (_req, res) => {
+    const hours = await storage.getAllBusinessHours();
+    res.json(hours);
+  });
+
+  app.post("/api/business-hours", async (req, res) => {
+    try {
+      const data = insertBusinessHourSchema.parse(req.body);
+      const hour = await storage.createOrUpdateBusinessHour(data);
+      res.json(hour);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Announcements
+  app.get("/api/announcements", async (_req, res) => {
+    const announcements = await storage.getAllAnnouncements();
+    res.json(announcements);
+  });
+
+  app.get("/api/announcements/active", async (_req, res) => {
+    const announcements = await storage.getActiveAnnouncements();
+    res.json(announcements);
+  });
+
+  app.get("/api/announcements/:id", async (req, res) => {
+    const announcement = await storage.getAnnouncement(req.params.id);
+    if (!announcement) return res.status(404).json({ error: "Announcement not found" });
+    res.json(announcement);
+  });
+
+  app.post("/api/announcements", async (req, res) => {
+    try {
+      const data = insertAnnouncementSchema.parse(req.body);
+      const announcement = await storage.createAnnouncement(data);
+      res.json(announcement);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/announcements/:id", async (req, res) => {
+    try {
+      const announcement = await storage.updateAnnouncement(req.params.id, req.body);
+      if (!announcement) return res.status(404).json({ error: "Announcement not found" });
+      res.json(announcement);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/announcements/:id", async (req, res) => {
+    const success = await storage.deleteAnnouncement(req.params.id);
+    if (!success) return res.status(404).json({ error: "Announcement not found" });
+    res.json({ success: true });
   });
 
   const httpServer = createServer(app);
