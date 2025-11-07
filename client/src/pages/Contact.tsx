@@ -1,9 +1,22 @@
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Clock, Mail } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { MapPin, Phone, Clock, AlertTriangle, Info } from "lucide-react";
 import { SiLine } from "react-icons/si";
+import type { BusinessHour, Announcement } from "@shared/schema";
+
+const weekDays = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
 
 export default function Contact() {
+  const { data: businessHours = [] } = useQuery<BusinessHour[]>({
+    queryKey: ["/api/business-hours"],
+  });
+
+  const { data: activeAnnouncements = [] } = useQuery<Announcement[]>({
+    queryKey: ["/api/announcements/active"],
+  });
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -11,6 +24,26 @@ export default function Contact() {
           <h1 className="text-5xl font-serif font-bold mb-4">聯絡我們</h1>
           <p className="text-lg text-muted-foreground">歡迎隨時與我們聯繫</p>
         </div>
+
+        {activeAnnouncements.length > 0 && (
+          <div className="max-w-4xl mx-auto mb-8 space-y-4">
+            {activeAnnouncements.map((announcement) => (
+              <Alert 
+                key={announcement.id} 
+                variant={announcement.type === "warning" ? "destructive" : "default"}
+                data-testid={`announcement-${announcement.id}`}
+              >
+                {announcement.type === "warning" ? (
+                  <AlertTriangle className="h-4 w-4" />
+                ) : (
+                  <Info className="h-4 w-4" />
+                )}
+                <AlertTitle>{announcement.title}</AlertTitle>
+                <AlertDescription>{announcement.content}</AlertDescription>
+              </Alert>
+            ))}
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           <Card>
@@ -67,11 +100,25 @@ export default function Contact() {
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Clock className="w-6 h-6 text-primary" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">營業時間</h3>
-                    <div className="text-muted-foreground space-y-1">
-                      <p>週一至週六：10:00 - 20:00</p>
-                      <p>週日：10:00 - 18:00</p>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-2">營業時間</h3>
+                    <div className="space-y-1 text-sm">
+                      {businessHours.length > 0 ? (
+                        [...businessHours].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map((hour) => (
+                          <div key={hour.id} className="flex items-center justify-between" data-testid={`hours-${hour.dayOfWeek}`}>
+                            <span className="text-muted-foreground min-w-[3rem]">{weekDays[hour.dayOfWeek]}</span>
+                            {hour.isClosed ? (
+                              <Badge variant="secondary" className="ml-2">公休</Badge>
+                            ) : (
+                              <span className="text-muted-foreground ml-2">
+                                {hour.openTime} - {hour.closeTime}
+                              </span>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-muted-foreground">請來電洽詢</p>
+                      )}
                     </div>
                   </div>
                 </div>
