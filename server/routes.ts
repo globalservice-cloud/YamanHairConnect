@@ -17,6 +17,7 @@ import {
 } from "@shared/schema";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const updateServiceSchema = insertServiceSchema.partial();
 
 // Configure multer for file uploads
 const storageConfig = multer.diskStorage({
@@ -100,13 +101,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Services
   app.get("/api/services", async (_req, res) => {
-    const services = await storage.getAllServices();
-    res.json(services);
+    try {
+      const services = await storage.getAllServices();
+      res.json(services);
+    } catch (error: any) {
+      res.status(500).json({ error: "Failed to fetch services", detail: error?.message });
+    }
   });
 
   app.get("/api/services/active", async (_req, res) => {
-    const services = await storage.getActiveServices();
-    res.json(services);
+    try {
+      const services = await storage.getActiveServices();
+      res.json(services);
+    } catch (error: any) {
+      res.status(500).json({ error: "Failed to fetch active services", detail: error?.message });
+    }
   });
 
   app.get("/api/services/:id", async (req, res) => {
@@ -127,7 +136,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/services/:id", async (req, res) => {
     try {
-      const service = await storage.updateService(req.params.id, req.body);
+      const updates = updateServiceSchema.parse(req.body);
+      const service = await storage.updateService(req.params.id, updates);
       if (!service) return res.status(404).json({ error: "Service not found" });
       res.json(service);
     } catch (error: any) {
@@ -143,18 +153,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Staff
   app.get("/api/staff", async (_req, res) => {
-    const staff = await storage.getAllStaff();
-    res.json(staff);
+    try {
+      const staff = await storage.getAllStaff();
+      res.json(staff);
+    } catch (error: any) {
+      res.status(500).json({ error: "Failed to fetch staff", detail: error?.message });
+    }
   });
 
   app.get("/api/staff/active", async (_req, res) => {
-    const staff = await storage.getActiveStaff();
-    res.json(staff);
+    try {
+      const staff = await storage.getActiveStaff();
+      res.json(staff);
+    } catch (error: any) {
+      res.status(500).json({ error: "Failed to fetch active staff", detail: error?.message });
+    }
   });
 
   app.get("/api/staff/role/:role", async (req, res) => {
-    const staff = await storage.getStaffByRole(req.params.role);
-    res.json(staff);
+    try {
+      const staff = await storage.getStaffByRole(req.params.role);
+      res.json(staff);
+    } catch (error: any) {
+      res.status(500).json({ error: "Failed to fetch staff by role", detail: error?.message });
+    }
   });
 
   app.get("/api/staff/:id", async (req, res) => {

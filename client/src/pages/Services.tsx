@@ -1,49 +1,20 @@
 import ServiceCard from "@/components/ServiceCard";
-import { Scissors, Palette, Waves, Sparkles, Droplets } from "lucide-react";
-import washingImage from '@assets/stock_images/clean_professional_h_d5fc4d99.jpg';
-import cuttingImage from '@assets/stock_images/professional_hairdre_9015c124.jpg';
-import coloringImage from '@assets/stock_images/professional_hair_co_3a1117ee.jpg';
-import permingImage from '@assets/stock_images/hair_perm_curling_se_31f1e998.jpg';
-import treatmentImage from '@assets/generated_images/Professional_hair_treatment_service_d3367325.png';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { buildServiceCardData, defaultServiceCards } from "@/data/serviceMeta";
+import { useActiveServices } from "@/hooks/useServices";
 
 export default function Services() {
-  const services = [
-    {
-      title: "洗髮",
-      description: "舒適的洗髮體驗，使用優質洗髮產品，為您的秀髮提供基礎清潔與保養。",
-      price: "NT$ 250",
-      image: washingImage,
-      icon: Droplets,
-    },
-    {
-      title: "專業剪髮",
-      description: "根據您的臉型、氣質與生活方式，設計專屬於您的完美髮型。我們的設計師會細心傾聽您的需求，提供專業建議。",
-      price: "NT$ 400",
-      image: cuttingImage,
-      icon: Scissors,
-    },
-    {
-      title: "時尚染髮",
-      description: "使用頂級染劑，為您呈現完美髮色。從自然色系到時尚潮流色，都能展現您的獨特魅力。",
-      price: "NT$ 2,000 起",
-      image: coloringImage,
-      icon: Palette,
-    },
-    {
-      title: "質感燙髮",
-      description: "打造自然捲度與蓬鬆感，讓頭髮充滿生命力。使用溫和藥水，降低對髮質的傷害。",
-      price: "NT$ 2,000 起",
-      image: permingImage,
-      icon: Waves,
-    },
-    {
-      title: "深層護髮",
-      description: "針對受損髮質提供深層修護，補充養分與水分，讓秀髮恢復健康光澤。",
-      price: "NT$ 800 起",
-      image: treatmentImage,
-      icon: Sparkles,
-    },
-  ];
+  const {
+    data: services = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useActiveServices();
+
+  const cards = services.length ? services.map((service) => buildServiceCardData(service)) : defaultServiceCards;
+  const showFallbackNotice = !isLoading && services.length === 0 && !isError;
 
   return (
     <div className="min-h-screen py-12">
@@ -55,11 +26,40 @@ export default function Services() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {services.map((service, index) => (
-            <ServiceCard key={index} {...service} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton key={index} className="h-[360px] w-full rounded-2xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {cards.map((service) => (
+              <ServiceCard key={service.title} {...service} />
+            ))}
+          </div>
+        )}
+
+        {isError && (
+          <Alert variant="destructive" className="mt-10 max-w-4xl mx-auto">
+            <AlertTitle>服務列表載入失敗</AlertTitle>
+            <AlertDescription className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <span>請檢查網路連線或稍後再試一次。</span>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                重新整理
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {showFallbackNotice && (
+          <Alert className="mt-10 max-w-4xl mx-auto">
+            <AlertTitle>目前顯示預設服務資訊</AlertTitle>
+            <AlertDescription>
+              尚未在後台啟用服務資料，訪客暫時看到的是品牌預設內容；可在管理後台新增或啟用服務來更新此區塊。
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="mt-16 p-8 bg-card rounded-2xl max-w-4xl mx-auto">
           <h2 className="text-2xl font-serif font-semibold mb-4 text-center">服務說明</h2>

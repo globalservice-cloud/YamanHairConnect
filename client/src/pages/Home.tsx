@@ -1,37 +1,28 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Scissors, Palette, Waves, Sparkles, Heart, Star, Phone, MapPin, Clock, Award, Users, CheckCircle2 } from "lucide-react";
+import { Scissors, Sparkles, Heart, Star, Phone, MapPin, Clock, Award, Users, CheckCircle2 } from "lucide-react";
 import { SiLine } from "react-icons/si";
 import teamPhoto from "@assets/IMG_3687_1762425091046.jpeg";
+import { useActiveServices } from "@/hooks/useServices";
+import { buildServiceHighlightData, defaultServiceHighlights } from "@/data/serviceMeta";
 
 export default function Home() {
-  const services = [
-    {
-      title: "專業剪髮",
-      description: "根據臉型設計專屬髮型，展現個人魅力",
-      price: "NT$ 400",
-      icon: Scissors,
-    },
-    {
-      title: "時尚染髮",
-      description: "頂級染劑呈現完美色澤，持久亮麗",
-      price: "NT$ 2,000 起",
-      icon: Palette,
-    },
-    {
-      title: "質感燙髮",
-      description: "溫和藥水打造自然捲度，減少髮質傷害",
-      price: "NT$ 2,000 起",
-      icon: Waves,
-    },
-    {
-      title: "深層護髮",
-      description: "專業護理修護受損髮質，恢復健康光澤",
-      price: "NT$ 800 起",
-      icon: Sparkles,
-    },
-  ];
+  const {
+    data: activeServices = [],
+    isLoading: servicesLoading,
+    isError: servicesError,
+  } = useActiveServices();
+
+  const featuredServices = activeServices.length
+    ? activeServices.slice(0, 4).map((service) => buildServiceHighlightData(service))
+    : defaultServiceHighlights;
+
+  const showServiceFallbackMessage = !servicesLoading && (servicesError || activeServices.length === 0);
+  const serviceFallbackMessage = servicesError
+    ? "暫時無法載入實際服務資料，已顯示預設內容。"
+    : "尚未在後台啟用服務資料，暫以品牌預設內容呈現。";
 
   const highlights = [
     {
@@ -180,19 +171,32 @@ export default function Home() {
             <p className="text-lg text-muted-foreground">從基礎護理到時尚造型，滿足您的所有美髮需求</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, index) => (
-              <Card key={index} className="hover-elevate group">
-                <CardContent className="p-6">
-                  <div className="w-14 h-14 mb-4 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <service.icon className="w-7 h-7 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
-                  <p className="text-muted-foreground text-sm mb-4 leading-relaxed">{service.description}</p>
-                  <p className="text-primary font-semibold text-lg">{service.price}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {servicesLoading
+              ? Array.from({ length: 4 }).map((_, index) => (
+                  <Card key={`service-skeleton-${index}`} className="p-6">
+                    <Skeleton className="w-14 h-14 mb-4 rounded-xl" />
+                    <Skeleton className="h-6 w-3/4 mb-3" />
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-5/6 mb-4" />
+                    <Skeleton className="h-5 w-24" />
+                  </Card>
+                ))
+              : featuredServices.map((service) => (
+                  <Card key={service.title} className="hover-elevate group">
+                    <CardContent className="p-6">
+                      <div className="w-14 h-14 mb-4 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <service.icon className="w-7 h-7 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
+                      <p className="text-muted-foreground text-sm mb-4 leading-relaxed">{service.description}</p>
+                      <p className="text-primary font-semibold text-lg">{service.price}</p>
+                    </CardContent>
+                  </Card>
+                ))}
           </div>
+          {showServiceFallbackMessage && (
+            <p className="text-center text-sm text-muted-foreground mt-4">{serviceFallbackMessage}</p>
+          )}
           <div className="text-center mt-10">
             <Link href="/services" data-testid="link-view-services">
               <Button size="lg" variant="outline" data-testid="button-view-all-services">
